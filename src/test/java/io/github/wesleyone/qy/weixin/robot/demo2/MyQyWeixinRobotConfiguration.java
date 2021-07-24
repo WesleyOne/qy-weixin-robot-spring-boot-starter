@@ -59,8 +59,7 @@ public class MyQyWeixinRobotConfiguration {
      */
     @Bean
     public QyWeixinRobotBean robotB() {
-        final QyWeixinRobotBean robotBean = new QyWeixinRobotBean(Constant.WEBHOOK_URL_KEY_B);
-        return robotBean;
+        return new QyWeixinRobotBean(Constant.WEBHOOK_URL_KEY_B);
     }
 
     /**
@@ -104,10 +103,8 @@ public class MyQyWeixinRobotConfiguration {
     @Primary
     public QyWeixinRobotScheduledExecutorService myScheduledExecutorService() {
         final ScheduledExecutorService scheduledExecutorService =
-                Executors.newScheduledThreadPool(
-                        1
-                        ,new QyWeixinRobotThreadFactoryImpl("my-weixin-")
+                Executors.newScheduledThreadPool(2,new QyWeixinRobotThreadFactoryImpl("my-weixin-demo-")
                 );
-        return new QyWeixinRobotScheduledExecutorService(0,2,TimeUnit.SECONDS, true, scheduledExecutorService);
+        return new QyWeixinRobotScheduledExecutorService(0,1,TimeUnit.SECONDS, true, scheduledExecutorService);
     }
 }

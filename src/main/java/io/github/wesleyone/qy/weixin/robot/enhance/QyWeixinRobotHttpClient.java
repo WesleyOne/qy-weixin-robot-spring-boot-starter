@@ -58,12 +58,19 @@ public class QyWeixinRobotHttpClient implements EnhanceInterface {
     private OkHttpClient client = null;
 
     private QyWeixinRobotWebhook webhookApi;
+    /**
+     * 初始化状态。true已初始化
+     */
+    private boolean status = false;
 
     public QyWeixinRobotHttpClient() {
     }
 
     @Override
-    public void init() {
+    public synchronized void init() {
+        if (status) {
+            return;
+        }
         if (client == null) {
             client = new OkHttpClient.Builder()
                     .readTimeout(5, TimeUnit.SECONDS)
@@ -77,6 +84,7 @@ public class QyWeixinRobotHttpClient implements EnhanceInterface {
                 .client(client)
                 .build();
         webhookApi = retrofit.create(QyWeixinRobotWebhook.class);
+        status = true;
     }
 
     /**

@@ -160,6 +160,7 @@ public QyWeixinRobotScheduledExecutorService myScheduledExecutorService() {
 一个项目里使用多个机器人时，注意如下：
 - Http请求客户端对象复用。有利减少连接线程数，减少内存占用。
 - 调度线程池执行器复用。提高池内线程利用率，减少内存占用。
+- 自定义扩展的`init()`方法做好状态校验。防止多个机器人重复执行导致的异常。
 
 > SpringBoot方式使用时，已采用以上建议。
 

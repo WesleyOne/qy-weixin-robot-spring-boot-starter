@@ -65,7 +65,7 @@ public class QyWeixinRobotAutoConfiguration {
     public QyWeixinRobotScheduledExecutorService defaultQyWeixinRobotScheduledExecutorService() {
         final ScheduledExecutorService scheduledExecutorService =
                 Executors.newSingleThreadScheduledExecutor(
-                        new QyWeixinRobotThreadFactoryImpl("qy-wx-robot-"));
+                        new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
         return new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
     }
 

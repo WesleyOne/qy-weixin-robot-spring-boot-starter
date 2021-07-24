@@ -1,28 +1,27 @@
 package io.github.wesleyone.qy.weixin.robot.spring.bean;
 
-import com.alibaba.testable.core.annotation.MockMethod;
+import io.github.wesleyone.qy.weixin.robot.BasicMock;
 import io.github.wesleyone.qy.weixin.robot.Constant;
-import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinQueueProcessStrategy;
-import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
 import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotUtil;
 import io.github.wesleyone.qy.weixin.robot.demo2.MyQyWeixinRobotConfiguration;
-import io.github.wesleyone.qy.weixin.robot.entity.*;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinQueueProcessStrategy;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotHttpClient;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
+import io.github.wesleyone.qy.weixin.robot.entity.*;
 import io.github.wesleyone.qy.weixin.robot.spring.autoconfiguration.QyWeixinRobotAutoConfiguration;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -32,23 +31,13 @@ import java.util.concurrent.TimeUnit;
  * @author http://wesleyone.github.io/
  */
 @RunWith(SpringRunner.class)
+@EnableAutoConfiguration
 @SpringBootTest(
         classes = {MyQyWeixinRobotConfiguration.class,QyWeixinRobotAutoConfiguration.class},
         webEnvironment=SpringBootTest.WebEnvironment.NONE)
 public class QyWeixinRobotBeanTest {
 
-    public static class Mock {
-        @MockMethod(targetClass= QyWeixinRobotHttpClient.class,targetMethod = "sendSync")
-        private QyWeixinResponse sendSync(String key, Map<String,Object> message) {
-            System.out.println("MOCK sendSync");
-            return QyWeixinResponse.ok();
-        }
-
-        @MockMethod(targetClass= QyWeixinRobotHttpClient.class,targetMethod = "sendAsync")
-        private void sendAsync(String key, Map<String,Object> message, Callback<QyWeixinResponse> callback) {
-            System.out.println("MOCK sendAsync");
-            callback.onResponse(null, Response.success(QyWeixinResponse.ok()));
-        }
+    public static class Mock extends BasicMock {
     }
 
     @Autowired
@@ -232,11 +221,57 @@ public class QyWeixinRobotBeanTest {
         mkThread.join();
     }
 
+    @Ignore
     @Test
     public void postMsgSync_file() {
         // 文件
         QyWeixinFileMessage qyWeixinFileMessage = new QyWeixinFileMessage("xxx");
         boolean msgSync = robotA.postMsgSync(qyWeixinFileMessage);
         Assert.assertTrue(msgSync);
+    }
+
+    @Test
+    public void postMsgAsyncQueue_text() throws InterruptedException {
+        // 文本
+        final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage("文本类型异步消息发送测试，关注公众号【火字旁的炜】");
+        List<String> mentionedList = new ArrayList<>();
+        mentionedList.add(QyWeixinTextMessage.AT_ALL);
+        qyWeixinTextMessage.setMentionedList(mentionedList);
+        robotA.postMsgAsyncQueue(qyWeixinTextMessage);
+
+        final QyWeixinTextMessage qyWeixinTextMessageB = new QyWeixinTextMessage("文本类型异步消息发送测试B，关注公众号【火字旁的炜】");
+        qyWeixinTextMessage.setMentionedList(mentionedList);
+        robotB.postMsgAsyncQueue(qyWeixinTextMessageB);
+
+        TimeUnit.SECONDS.sleep(3);
+    }
+
+    @Test
+    public void postMsgAsyncQueue_mk() throws InterruptedException {
+        // markdown
+        final QyWeixinMarkdownMessage qyWeixinMarkdownMessage = new QyWeixinMarkdownMessage(QyWeixinMarkdownMessage.AT_ALL_C+"\n " +
+                "目前支持的markdown语法是如下的子集：\n" +
+                "\n " +
+                "# 标题一\n " +
+                "## 标题二\n " +
+                "### 标题三\n " +
+                "#### 标题四\n " +
+                "##### 标题五\n " +
+                "###### 标题六\n " +
+                "**加粗**\n " +
+                "[这是一个链接](https://work.weixin.qq.com/api/doc/90000/90136/91770)\n " +
+                "`code`\n " +
+                "> 引用文字:" +
+                "> talk is so cheap" +
+                "> show me code\n" +
+                "\n " +
+                "<font color=\"info\">绿色</font>\n" +
+                "<font color=\"comment\">灰色</font>\n" +
+                "<font color=\"warning\">橙红色</font>"
+        );
+        robotA.postMsgAsyncQueue(qyWeixinMarkdownMessage);
+        robotB.postMsgAsyncQueue(qyWeixinMarkdownMessage);
+
+        TimeUnit.SECONDS.sleep(3);
     }
 }

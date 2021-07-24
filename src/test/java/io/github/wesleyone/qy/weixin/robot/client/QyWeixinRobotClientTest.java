@@ -1,22 +1,15 @@
 package io.github.wesleyone.qy.weixin.robot.client;
 
-import com.alibaba.testable.core.annotation.MockMethod;
+import io.github.wesleyone.qy.weixin.robot.BasicMock;
 import io.github.wesleyone.qy.weixin.robot.Constant;
-import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotUtil;
-import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotHttpClient;
-import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
 import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotThreadFactoryImpl;
+import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotUtil;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
 import io.github.wesleyone.qy.weixin.robot.entity.*;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import retrofit2.Callback;
-import retrofit2.Response;
+import org.junit.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
@@ -30,36 +23,16 @@ public class QyWeixinRobotClientTest {
 
     private QyWeixinRobotClient qyWeixinRobotClient;
 
-    public static class Mock {
-        @MockMethod(targetClass= QyWeixinRobotHttpClient.class,targetMethod = "sendSync")
-        private QyWeixinResponse sendSync(String key, Map<String,Object> message) {
-            System.out.println("MOCK sendSync");
-            return QyWeixinResponse.ok();
-        }
-
-        @MockMethod(targetClass= QyWeixinRobotHttpClient.class,targetMethod = "sendAsync")
-        private void sendAsync(String key, Map<String,Object> message, Callback<QyWeixinResponse> callback) {
-            System.out.println("MOCK sendAsync");
-            callback.onResponse(null, Response.success(QyWeixinResponse.ok()));
-        }
-
-        @MockMethod(targetClass= QyWeixinRobotHttpClient.class,targetMethod = "uploadMedia")
-        private void uploadMedia(String key, String filePath, Callback<QyWeixinResponse> callback) {
-            System.out.println("MOCK sendAsync");
-            QyWeixinResponse ok = QyWeixinResponse.ok();
-            ok.setMedia_id("mock");
-            ok.setType("file");
-            ok.setCreated_at(""+System.currentTimeMillis()/1000);
-            callback.onResponse(null, Response.success(ok));
-        }
+    public static class Mock extends BasicMock {
     }
 
     @Before
     public void setUp() {
         qyWeixinRobotClient = new QyWeixinRobotClient(Constant.WEBHOOK_URL_KEY);
         QyWeixinRobotScheduledExecutorService scheduledExecutorService
-                = new QyWeixinRobotScheduledExecutorService(0,2,TimeUnit.SECONDS,true
+                = new QyWeixinRobotScheduledExecutorService(0,1,TimeUnit.SECONDS,true
                 , Executors.newSingleThreadScheduledExecutor(new QyWeixinRobotThreadFactoryImpl("qy-weixin-test-")));
+        qyWeixinRobotClient.setScheduledExecutorService(scheduledExecutorService);
         qyWeixinRobotClient.init();
     }
 
@@ -136,12 +109,53 @@ public class QyWeixinRobotClientTest {
         qyWeixinRobotClient.postMsgSync(qyWeixinNewsMessage);
     }
 
+    @Ignore
     @Test
     public void postMsgSync_file() {
         // 文件
         QyWeixinFileMessage qyWeixinFileMessage = new QyWeixinFileMessage("xxx");
         boolean msgSync = qyWeixinRobotClient.postMsgSync(qyWeixinFileMessage);
         Assert.assertTrue(msgSync);
+    }
+
+    @Test
+    public void postMsgAsyncQueue_text() throws InterruptedException {
+        // 文本
+        final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage("文本类型同步发送测试，关注公众号【火字旁的炜】");
+        List<String> mentionedList = new ArrayList<>();
+        mentionedList.add(QyWeixinTextMessage.AT_ALL);
+        qyWeixinTextMessage.setMentionedList(mentionedList);
+        boolean result = qyWeixinRobotClient.postMsgAsyncQueue(qyWeixinTextMessage);
+        Assert.assertTrue(result);
+        TimeUnit.SECONDS.sleep(2);
+    }
+
+    @Test
+    public void postMsgAsyncQueue_mk() throws InterruptedException {
+        // markdown
+        final QyWeixinMarkdownMessage qyWeixinMarkdownMessage = new QyWeixinMarkdownMessage(QyWeixinMarkdownMessage.AT_ALL_C+"\n " +
+                "目前支持的markdown语法是如下的子集：\n" +
+                "\n " +
+                "# 标题一\n " +
+                "## 标题二\n " +
+                "### 标题三\n " +
+                "#### 标题四\n " +
+                "##### 标题五\n " +
+                "###### 标题六\n " +
+                "**加粗**\n " +
+                "[这是一个链接](https://work.weixin.qq.com/api/doc/90000/90136/91770)\n " +
+                "`code`\n " +
+                "> 引用文字:" +
+                "> talk is so cheap" +
+                "> show me code\n" +
+                "\n " +
+                "<font color=\"info\">绿色</font>\n" +
+                "<font color=\"comment\">灰色</font>\n" +
+                "<font color=\"warning\">橙红色</font>"
+        );
+        boolean result = qyWeixinRobotClient.postMsgAsyncQueue(qyWeixinMarkdownMessage);
+        Assert.assertTrue(result);
+        TimeUnit.SECONDS.sleep(2);
     }
 
     @Test

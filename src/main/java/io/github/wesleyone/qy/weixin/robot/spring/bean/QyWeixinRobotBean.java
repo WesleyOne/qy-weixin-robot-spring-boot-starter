@@ -52,7 +52,7 @@ public class QyWeixinRobotBean extends QyWeixinRobotClient implements Applicatio
             setStrategy(qyWeixinQueueProcessStrategy);
         }
         // 调度执行器，未手动setter时，自动从容器中获取
-        if (getScheduledExecutorService() != null) {
+        if (getScheduledExecutorService() == null) {
             QyWeixinRobotScheduledExecutorService qyWeixinRobotScheduledExecutorService
                     = applicationContext.getBean(QyWeixinRobotScheduledExecutorService.class);
             setScheduledExecutorService(qyWeixinRobotScheduledExecutorService);

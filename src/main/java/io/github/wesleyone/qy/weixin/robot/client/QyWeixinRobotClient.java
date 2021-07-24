@@ -83,12 +83,14 @@ public class QyWeixinRobotClient {
         }
         if (scheduledExecutorService == null) {
             ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
-                    new QyWeixinRobotThreadFactoryImpl("qy-weixin-robot-"));
+                    new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
             this.scheduledExecutorService = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
         }
         this.qyWeixinRobotHttpClient.init();
         this.strategy.init();
         this.scheduledExecutorService.init();
+        // 提交任务
+        this.scheduledExecutorService.scheduled(consumeQueueRunnable());
         status = true;
     }
 

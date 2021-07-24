@@ -1,7 +1,7 @@
 package io.github.wesleyone.qy.weixin.robot.enhance;
 
+import io.github.wesleyone.qy.weixin.robot.BasicMock;
 import io.github.wesleyone.qy.weixin.robot.Constant;
-import io.github.wesleyone.qy.weixin.robot.client.QyWeixinRobotClient;
 import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinResponse;
 import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinTextMessage;
 import org.junit.After;
@@ -14,15 +14,15 @@ import retrofit2.Response;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
 
 /**
  * @author http://wesleyone.github.io/
  */
 public class QyWeixinRobotHttpClientTest {
+
+    public static class Mock extends BasicMock {
+    }
 
     private QyWeixinRobotHttpClient qyWeixinRobotHttpClient;
     @Before
