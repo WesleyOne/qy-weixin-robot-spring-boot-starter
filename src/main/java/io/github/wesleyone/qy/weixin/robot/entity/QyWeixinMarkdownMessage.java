@@ -7,16 +7,15 @@ import java.util.Map;
 
 /**
  * markdown类型消息
- * <p>
- * <p>数据格式：
- * <pre><code>
+ * <p>数据格式：</p>
+ * <pre>{@code
  * {
  *     "msgtype": "markdown",
  *     "markdown": {
  *         "content": "> TALK IS SO CHEAP,SHOW ME YOUR CODE."
  *     }
  * }
- * </code></pre>
+ * }</pre>
  *
  * 目前支持的markdown语法是如下的子集：
  * <pre>
@@ -38,11 +37,11 @@ import java.util.Map;
  * </pre>
  * <pre>
  * 4.行内代码段（暂不支持跨行）
- * `code`
+ * {@code `code`}
  * </pre>
  * <pre>
  * 5. 引用
- * > 引用文字
+ * {@code > 引用文字}
  * </pre>
  * <pre>
  * 6. 字体颜色(只支持3种内置颜色)
@@ -60,13 +59,13 @@ public class QyWeixinMarkdownMessage extends QyWeixinBaseAsyncMessage {
     private static final long serialVersionUID = -7154208917565668922L;
     public static final int MAX_MARKDOWN_CONTENT_LEN = 4096;
     /**
-     * <p>@所有人
-     * <p>text/markdown类型消息支持在content中使用<@all>扩展语法来@群所有人
+     * <code>@所有人</code><br>
+     * <code>text/markdown类型消息支持在content中使用<@all>扩展语法来@群所有人</code>
      */
     public static final String AT_ALL_C = "<@all>";
     /**
-     * <p>markdown内容，
-     * <p>最长不超过4096个字节，必须是utf8编码
+     * markdown内容，
+     * <p>最长不超过4096个字节，必须是utf8编码</p>
      */
     private String content;
 

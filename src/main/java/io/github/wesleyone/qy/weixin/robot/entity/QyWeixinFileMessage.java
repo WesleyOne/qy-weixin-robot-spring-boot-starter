@@ -7,8 +7,7 @@ import java.util.Map;
 
 /**
  * 文件类型消息
- * <p>
- * <p>数据格式：
+ * <p>数据格式：</p>
  * <pre><code>
  * {
  *     "msgtype": "file",

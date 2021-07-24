@@ -123,11 +123,13 @@ public class QyWeixinRobotClient {
         scheduledExecutorService.shutdown();
     }
 
+
     /**
      * 同步发送消息
      * <p>注意并发情形下会被限流
      *
      * @param message   消息
+     * @return true发送成功
      */
     public boolean postMsgSync(QyWeixinBaseMessage message) {
         if (!status) {
@@ -189,7 +191,7 @@ public class QyWeixinRobotClient {
 
     /**
      * 上传文件
-     * @param path
+     * @param path  文件路径
      */
     public void uploadMedia(String path) {
         qyWeixinRobotHttpClient.uploadMedia(key, path, new Callback<QyWeixinResponse>() {

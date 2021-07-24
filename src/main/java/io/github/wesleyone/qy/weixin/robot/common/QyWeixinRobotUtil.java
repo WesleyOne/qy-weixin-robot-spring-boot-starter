@@ -75,11 +75,15 @@ public class QyWeixinRobotUtil {
         return Base64.getEncoder().encodeToString(byteArray);
     }
 
+
     /**
      * 获取文件的md5值
-     * <p>可用于图片类型消息
+     * <br/>可用于图片类型消息
      *
-     * @return md5 value
+     * @param filePath  文件路径
+     * @return  MD5编码
+     * @throws IOException  IO异常
+     * @throws NoSuchAlgorithmException 算法不存在异常
      */
     public static String md5(String filePath) throws IOException, NoSuchAlgorithmException {
         MessageDigest md5Algorithm = MessageDigest.getInstance("MD5");
