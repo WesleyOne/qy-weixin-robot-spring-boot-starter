@@ -69,3 +69,7 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+      
+    - name: Codecov
+      uses: codecov/codecov-action@v2.0.2
+
