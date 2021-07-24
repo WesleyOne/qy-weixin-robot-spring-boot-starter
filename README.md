@@ -1,6 +1,8 @@
 
 # 企业微信机器人
 
+[![CircleCI](https://circleci.com/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/tree/master.svg?style=svg)](https://circleci.com/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/tree/master)
+
 > [官方接口文档https://work.weixin.qq.com/api/doc/90000/90136/91770](https://work.weixin.qq.com/api/doc/90000/90136/91770)
 
 ![项目架构](./qy_weixin_robot.png)
