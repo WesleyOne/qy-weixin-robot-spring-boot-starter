@@ -43,13 +43,13 @@ public class BizBean {
   private QyWeixinRobotBean robotA;
   
   public void postMsgAsync () {
-    final QyWeixinTextMessage batchMessage
-            = new QyWeixinTextMessage("文本类型异步发送测试-spring");
-    robotA.postMsgAsyncQueue(batchMessage);
+    final QyWeixinTextMessage textMessage
+            = new QyWeixinTextMessage("关注公众号【火字旁的炜】");
+    robotA.postMsgAsyncQueue(textMessage);
   }
 }
 ```
-**启动项目**
+**启动项目，调用业务方法**
 ```java
 @SpringBootApplication
 public class SpringApplicationStartUp {
@@ -71,14 +71,14 @@ public class NoneSpringApplicationStartUp {
 
     public static void main(String[] args) {
         QyWeixinRobotClient qyWeixinRobotClient
-                = new QyWeixinRobotClient("webhookUrl");
+                = new QyWeixinRobotClient("替换WEBHOOK链接的参数KEY值");
         // 初始化
         qyWeixinRobotClient.init();
 
         // 异步发送(推荐，防止被限流)
-        final QyWeixinTextMessage batchMessage
-                = new QyWeixinTextMessage("文本类型异步发送测试");
-        qyWeixinRobotClient.postMsgAsync(batchMessage);
+        final QyWeixinTextMessage textMessage
+                = new QyWeixinTextMessage("关注公众号【火字旁的炜】");
+        qyWeixinRobotClient.postMsgAsyncQueue(textMessage);
     }
 }
 ```
@@ -93,7 +93,7 @@ public class NoneSpringApplicationStartUp {
 ### 自定义Http请求客户端
 
 Http请求客户端，是用来请求企业微信API接口。
-<br>通过自定义`OkHttpClient`对象及配置，譬如连接超时等。
+<br>通过自定义`OkHttpClient`对象及配置，譬如连接超时、连接池等。
 <br>传入`QyWeixinRobotHttpClient`对象。
 
 ```java
@@ -145,7 +145,7 @@ public QyWeixinQueueProcessStrategy myQueueProcessStrategy() {
     - `false`: 使用`scheduleWithFixedDelay` 按照本次执行结束时间加上延迟时间。
 
 > ⚠️尤其是分布式项目下，一个机器人在多台机器上使用，要修改`delay`间隔时间，防止被限流。参考计算公式:`delay=3*机器数+1`。
-> 
+
 ```java
 @Bean
 @Primary
