@@ -33,7 +33,7 @@
 public class MyQyWeixinRobotConfiguration {
     @Bean
     public QyWeixinRobotBean robotA() {
-        return new QyWeixinRobotBean("替换WEBHOOK链接的参数KEY值");
+        return new QyWeixinRobotBean("替换WEBHOOK链接的参数KEY值,多个KEY值;半月角分号拼接");
     }
 }
 ```
@@ -73,7 +73,7 @@ public class NoneSpringApplicationStartUp {
 
     public static void main(String[] args) {
         QyWeixinRobotClient qyWeixinRobotClient
-                = new QyWeixinRobotClient("替换WEBHOOK链接的参数KEY值");
+                = new QyWeixinRobotClient("替换WEBHOOK链接的参数KEY值,多个KEY值;半月角分号拼接");
         // 初始化
         qyWeixinRobotClient.init();
 
@@ -89,14 +89,17 @@ public class NoneSpringApplicationStartUp {
 
 ## 可扩展点
 可通过自定义扩展点，覆盖默认配置。
+
+- Http请求客户端
+- 异步队列消息处理策略
+- 调度线程池处理器
+
 > 参考DEMO
 > `io.github.wesleyone.qy.weixin.robot.demo2.MyQyWeixinRobotConfiguration`
 
-### 自定义Http请求客户端
+**自定义Http请求客户端**
 
 Http请求客户端，是用来请求企业微信API接口。
-<br>通过自定义`OkHttpClient`对象及配置，譬如连接超时、连接池等。
-<br>传入`QyWeixinRobotHttpClient`对象。
 
 ```java
 @Bean
@@ -106,6 +109,7 @@ public QyWeixinRobotHttpClient myHttpClient() {
             .readTimeout(5, TimeUnit.SECONDS)
             .connectTimeout(5, TimeUnit.SECONDS)
             .writeTimeout(5, TimeUnit.SECONDS)
+            .connectionPool(new ConnectionPool(5,5L,TimeUnit.MINUTES))
             .build();
     QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
     qyWeixinRobotHttpClient.setClient(client);
@@ -113,12 +117,12 @@ public QyWeixinRobotHttpClient myHttpClient() {
 }
 ```
 
-### 自定义异步队列消息处理策略
-异步队列消息处理策略，是为了防范限流，同时尽可能多的发送消息。
+<br>通过自定义`OkHttpClient`对象及配置，譬如连接超时、连接池等。
+<br>传入`QyWeixinRobotHttpClient`对象。
 
-<br>自定义实现`QyWeixinQueueProcessStrategy`策略接口，
-<br>完成添加消息`addProcess`、消费队列`consumeProcess`方法逻辑设计。
-<br>也可以是调节默认实现`DefaultQyWeixinQueueProcessStrategy`的参数`maxBatchMsgCounts`一批处理最大消息数。
+**自定义异步队列消息处理策略**
+
+异步队列消息处理策略，是为了防范限流，同时尽可能多的发送消息。
 
 ```java
 @Bean
@@ -131,9 +135,23 @@ public QyWeixinQueueProcessStrategy myQueueProcessStrategy() {
 }
 ```
 
-### 自定义调度线程池处理器
+<br>自定义实现`QyWeixinQueueProcessStrategy`策略接口，
+<br>完成添加消息`addProcess`、消费队列`consumeProcess`方法逻辑设计。
+<br>也可以是调节默认实现`DefaultQyWeixinQueueProcessStrategy`的参数`maxBatchMsgCounts`一批处理最大消息数。
+
+**自定义调度线程池处理器**
 调度线程池处理器，用于周期性发起处理异步消息队列。
 <br>默认配置用的单线程处理器。
+
+```java
+@Bean
+@Primary
+public QyWeixinRobotScheduledExecutorService myScheduledExecutorService() {
+    final ScheduledExecutorService scheduledExecutorService =
+              Executors.newScheduledThreadPool(5,new QyWeixinRobotThreadFactoryImpl("qy-weixin-spring-"));
+    return new QyWeixinRobotScheduledExecutorService(2,3,TimeUnit.SECONDS, true, scheduledExecutorService);
+}
+```
 
 1. 自定义`ScheduledExecutorService`,并指定核心线程数量、创建的子线程名称。
 > ⚠️比如单个项目使用多个机器人时，应适当增大核心线程数;
@@ -146,20 +164,20 @@ public QyWeixinQueueProcessStrategy myQueueProcessStrategy() {
     - `true`: 默认值。使用`scheduleAtFixedRate` 按照上次执行开始时间加上延迟时间。（推荐，减少延迟）
     - `false`: 使用`scheduleWithFixedDelay` 按照本次执行结束时间加上延迟时间。
 
-> ⚠️尤其是分布式项目下，一个机器人在多台机器上使用，要修改`delay`间隔时间，防止被限流。参考计算公式:`delay=3*机器数+1`。
+> 每个机器人发送的消息不能超过20条/分钟。
+> 
+> ⚠️尤其是分布式项目下，一个机器人在多台服务器上使用，要修改`delay`间隔时间，防止被限流。
+> 
+> `v1.2`版本支持机器人对象升级为群组机器人概念，允许配置多个KEY，发送请求是根据负载均衡策略选择其中一个KEY。极大增强了抗限流能力。
+> 
+> 参考计算公式:`delay=(60/20) * 分布式项目服务器数量 / KEY数量`。
+> 
+> 个人测试过单个群创建10个KEY（机器人），间隔时间1秒，没有被限流。
 
-```java
-@Bean
-@Primary
-public QyWeixinRobotScheduledExecutorService myScheduledExecutorService() {
-    final ScheduledExecutorService scheduledExecutorService =
-              Executors.newScheduledThreadPool(5,new QyWeixinRobotThreadFactoryImpl("qy-weixin-spring-"));
-    return new QyWeixinRobotScheduledExecutorService(2,3,TimeUnit.SECONDS, true, scheduledExecutorService);
-}
-```
+
 ## 建议
 
-一个项目里使用多个机器人时，注意如下：
+一个项目里使用多个机器人（对象）时，注意如下：
 - Http请求客户端对象复用。有利减少连接线程数，减少内存占用。
 - 调度线程池执行器复用。提高池内线程利用率，减少内存占用。
 - 自定义扩展的`init()`方法做好状态校验。防止多个机器人重复执行导致的异常。

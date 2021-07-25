@@ -40,23 +40,23 @@ public class QyWeixinRobotScheduledExecutorService implements EnhanceInterface {
     }
 
     public QyWeixinRobotScheduledExecutorService(long initialDelay, long delay, TimeUnit unit, boolean isAtFixedRate, ScheduledExecutorService scheduledExecutorService) {
-        this.initialDelay = initialDelay;
-        this.delay = delay;
-        this.unit = unit;
-        this.isAtFixedRate = isAtFixedRate;
+        setInitialDelay(initialDelay);
+        setDelay(delay);
+        setUnit(unit);
+        setAtFixedRate(isAtFixedRate);
         this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @Override
     public void shutdown() {
-        scheduledExecutorService.shutdown();
+        getScheduledExecutorService().shutdown();
     }
 
     public ScheduledFuture<?> scheduled(Runnable command) {
-        if (isAtFixedRate) {
-            return this.scheduledExecutorService.scheduleAtFixedRate(command,initialDelay,delay,unit);
+        if (isAtFixedRate()) {
+            return this.scheduledExecutorService.scheduleAtFixedRate(command,getInitialDelay(),getDelay(),getUnit());
         } else {
-            return this.scheduledExecutorService.scheduleWithFixedDelay(command,initialDelay,delay,unit);
+            return this.scheduledExecutorService.scheduleWithFixedDelay(command,getInitialDelay(),getDelay(),getUnit());
         }
     }
 
