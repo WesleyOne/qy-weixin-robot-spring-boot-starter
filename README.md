@@ -15,7 +15,7 @@
 <dependency>
     <groupId>io.github.wesleyone</groupId>
     <artifactId>qy-weixin-robot-spring-boot-starter</artifactId>
-    <version>1.0</version>
+    <version>1.2</version>
 </dependency>
 <!--springboot needed below-->
 <dependency>
