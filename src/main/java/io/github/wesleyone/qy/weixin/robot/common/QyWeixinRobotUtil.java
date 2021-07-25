@@ -90,7 +90,7 @@ public class QyWeixinRobotUtil {
         final byte[] targetByteArray = subByteArray(
                 source.getBytes(StandardCharsets.UTF_8)
                 , 0, length);
-        return new String(targetByteArray);
+        return new String(targetByteArray,StandardCharsets.UTF_8);
     }
 
     /**
@@ -126,10 +126,11 @@ public class QyWeixinRobotUtil {
         byte[] digest = md5Algorithm.digest();
         StringBuilder md5Sb = new StringBuilder();
         for (byte b : digest) {
-            if (Integer.toHexString(0xFF & b).length() == 1) {
-                md5Sb.append("0").append(Integer.toHexString(0xFF & b));
+            String tmp = Integer.toHexString(0xFF & b);
+            if (tmp.length() == 1) {
+                md5Sb.append("0").append(tmp);
             } else {
-                md5Sb.append(Integer.toHexString(0xFF & b));
+                md5Sb.append(tmp);
             }
         }
         return md5Sb.toString();
