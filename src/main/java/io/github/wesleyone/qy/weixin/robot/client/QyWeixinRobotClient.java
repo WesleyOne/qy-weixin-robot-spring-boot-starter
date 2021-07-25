@@ -70,8 +70,6 @@ public class QyWeixinRobotClient {
      */
     private final AtomicLong useKeyCount = new AtomicLong(0);
 
-    private final Object lock = new Object();
-
     public QyWeixinRobotClient(String... key) {
         if (key == null) {
             throw new IllegalArgumentException("key is null");
