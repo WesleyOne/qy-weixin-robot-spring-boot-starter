@@ -52,38 +52,33 @@ public class QyWeixinRobotHttpClient implements EnhanceInterface {
         Call<QyWeixinResponse> uploadMedia(@Query("key") String key,@Query("type") String type, @Part MultipartBody.Part file);
     }
 
-    private OkHttpClient client = null;
+    private final OkHttpClient client;
 
-    private QyWeixinRobotWebhook webhookApi;
-    /**
-     * 初始化状态。true已初始化
-     */
-    private boolean status = false;
+    private final QyWeixinRobotWebhook webhookApi;
 
     public QyWeixinRobotHttpClient() {
-    }
-
-    @Override
-    public synchronized void init() {
-        if (status) {
-            return;
-        }
-        if (getClient() == null) {
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .readTimeout(5, TimeUnit.SECONDS)
-                    .connectTimeout(5, TimeUnit.SECONDS)
-                    .writeTimeout(5, TimeUnit.SECONDS)
-                    .connectionPool(new ConnectionPool(5,5L,TimeUnit.MINUTES))
-                    .build();
-            setClient(client);
-        }
+        this.client = new OkHttpClient.Builder()
+                .readTimeout(5, TimeUnit.SECONDS)
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(5, TimeUnit.SECONDS)
+                .connectionPool(new ConnectionPool(5,5L,TimeUnit.MINUTES))
+                .build();
         Retrofit retrofit= new Retrofit.Builder()
                 .baseUrl(DEFAULT_HOST)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
-        webhookApi = retrofit.create(QyWeixinRobotWebhook.class);
-        status = true;
+        this.webhookApi = retrofit.create(QyWeixinRobotWebhook.class);
+    }
+
+    public QyWeixinRobotHttpClient(OkHttpClient client) {
+        this.client = client;
+        Retrofit retrofit= new Retrofit.Builder()
+                .baseUrl(DEFAULT_HOST)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+        this.webhookApi = retrofit.create(QyWeixinRobotWebhook.class);
     }
 
     /**
@@ -142,14 +137,5 @@ public class QyWeixinRobotHttpClient implements EnhanceInterface {
         Call<QyWeixinResponse> uploadMediaCall = webhookApi.uploadMedia(key, "file", filePart);
         uploadMediaCall.enqueue(callback);
     }
-
-    public void setClient(OkHttpClient client) {
-        this.client = client;
-    }
-
-    public OkHttpClient getClient() {
-        return client;
-    }
-
 
 }

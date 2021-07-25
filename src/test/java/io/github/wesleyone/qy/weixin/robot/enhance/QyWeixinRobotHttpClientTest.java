@@ -32,14 +32,14 @@ public class QyWeixinRobotHttpClientTest {
     }
 
     @After
-    public void tearDown() throws InterruptedException {
-
+    public void tearDown() {
+        qyWeixinRobotHttpClient.shutdown();
     }
 
     @Test
     public void sendSync() {
         final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage("文本类型同步发送测试");
-        QyWeixinResponse response = qyWeixinRobotHttpClient.sendSync(Constant.WEBHOOK_URL_KEY, qyWeixinTextMessage.toMap());
+        QyWeixinResponse response = qyWeixinRobotHttpClient.sendSync(Constant.WEBHOOK_URL_KEY[0], qyWeixinTextMessage.toMap());
         Assert.assertTrue(response.isSuccess());
     }
 
@@ -47,7 +47,7 @@ public class QyWeixinRobotHttpClientTest {
     public void sendAsync() throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage("文本类型异步发送测试");
-        qyWeixinRobotHttpClient.sendAsync(Constant.WEBHOOK_URL_KEY, qyWeixinTextMessage.toMap(), new Callback<QyWeixinResponse>() {
+        qyWeixinRobotHttpClient.sendAsync(Constant.WEBHOOK_URL_KEY[0], qyWeixinTextMessage.toMap(), new Callback<QyWeixinResponse>() {
             @Override
             public void onResponse(Call<QyWeixinResponse> call, Response<QyWeixinResponse> response) {
                 Assert.assertTrue(response.isSuccessful());
@@ -67,9 +67,9 @@ public class QyWeixinRobotHttpClientTest {
     }
 
     @Test
-    public void uploadMedia() throws IOException, InterruptedException {
+    public void uploadMedia() throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        qyWeixinRobotHttpClient.uploadMedia(Constant.WEBHOOK_URL_KEY, Constant.IMG_PATH, new Callback<QyWeixinResponse>() {
+        qyWeixinRobotHttpClient.uploadMedia(Constant.WEBHOOK_URL_KEY[0], Constant.IMG_PATH, new Callback<QyWeixinResponse>() {
             @Override
             public void onResponse(Call<QyWeixinResponse> call, Response<QyWeixinResponse> response) {
                 Assert.assertTrue(response.isSuccessful());

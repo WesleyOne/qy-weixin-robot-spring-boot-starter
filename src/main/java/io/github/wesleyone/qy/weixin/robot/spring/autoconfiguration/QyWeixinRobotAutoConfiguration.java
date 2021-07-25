@@ -39,9 +39,7 @@ public class QyWeixinRobotAutoConfiguration {
                 .writeTimeout(5, TimeUnit.SECONDS)
                 .connectionPool(new ConnectionPool(5,5L,TimeUnit.MINUTES))
                 .build();
-        QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
-        qyWeixinRobotHttpClient.setClient(client);
-        return qyWeixinRobotHttpClient;
+        return new QyWeixinRobotHttpClient(client);
     }
 
     /**

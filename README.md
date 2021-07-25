@@ -39,7 +39,7 @@
 public class MyQyWeixinRobotConfiguration {
     @Bean
     public QyWeixinRobotBean robotA() {
-        return new QyWeixinRobotBean("KEY1","KEY2");
+        return new QyWeixinRobotBean({"KEY1","KEY2"});
     }
 }
 ```
@@ -72,14 +72,12 @@ public class SpringApplicationStartUp {
 
 ## 非SpringBoot环境
 
-实质上`QyWeixinRobotClient`是`QyWeixinRobotBean`的父类。
-
 ```java
 public class NoneSpringApplicationStartUp {
 
     public static void main(String[] args) {
         QyWeixinRobotClient qyWeixinRobotClient
-                = new QyWeixinRobotClient("KEY1","KEY2");
+                = new QyWeixinRobotClient({"KEY1","KEY2"});
         // 初始化
         qyWeixinRobotClient.init();
 
@@ -117,9 +115,7 @@ public QyWeixinRobotHttpClient myHttpClient() {
             .writeTimeout(5, TimeUnit.SECONDS)
             .connectionPool(new ConnectionPool(5,5L,TimeUnit.MINUTES))
             .build();
-    QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
-    qyWeixinRobotHttpClient.setClient(client);
-    return qyWeixinRobotHttpClient;
+    return new QyWeixinRobotHttpClient(client);
 }
 ```
 

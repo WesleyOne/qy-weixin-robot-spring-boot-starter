@@ -19,10 +19,12 @@ public class DefaultQyWeixinQueueProcessStrategyTest {
     @Before
     public void setUp() {
         strategy = new DefaultQyWeixinQueueProcessStrategy();
+        strategy.init();
     }
 
     @After
     public void tearDown() {
+        strategy.shutdown();
     }
 
     @Test
@@ -43,16 +45,6 @@ public class DefaultQyWeixinQueueProcessStrategyTest {
         strategy.addProcess(qyWeixinTextMessage, blockingQueue);
         qyWeixinBaseAsyncMessage = strategy.consumeProcess(blockingQueue);
         Assert.assertNotNull(qyWeixinBaseAsyncMessage);
-    }
-
-    @Test
-    public void getMaxBatchMsgCounts() {
-        // ignore
-    }
-
-    @Test
-    public void setMaxBatchMsgCounts() {
-        // ignore
     }
 
 }

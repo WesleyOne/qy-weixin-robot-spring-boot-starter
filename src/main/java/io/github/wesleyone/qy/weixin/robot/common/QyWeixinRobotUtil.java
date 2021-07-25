@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Locale;
 
 /**
  * @author http://wesleyone.github.io/
@@ -82,6 +83,9 @@ public class QyWeixinRobotUtil {
         if (filePath == null) {
             throw new IllegalArgumentException("filePath is null");
         }
+        if (!isAllowImg(filePath)) {
+            throw new IllegalArgumentException("file is not jpg/png");
+        }
         byte[] byteArray = Files.readAllBytes(Paths.get(filePath));
         return Base64.getEncoder().encodeToString(byteArray);
     }
@@ -97,13 +101,19 @@ public class QyWeixinRobotUtil {
      * @throws NoSuchAlgorithmException 算法不存在异常
      */
     public static String md5(String filePath) throws IOException, NoSuchAlgorithmException {
+        if (filePath == null) {
+            throw new IllegalArgumentException("filePath is null");
+        }
+        if (!isAllowImg(filePath)) {
+            throw new IllegalArgumentException("file is not jpg/png");
+        }
         MessageDigest md5Algorithm = MessageDigest.getInstance("MD5");
         byte[] byteArray = Files.readAllBytes(Paths.get(filePath));
         md5Algorithm.update(byteArray, 0, byteArray.length);
         byte[] digest = md5Algorithm.digest();
         StringBuilder md5Sb = new StringBuilder();
         for (byte b : digest) {
-            String tmp = Integer.toHexString(0xFF & b);
+            String tmp = String.format("%02x", b);
             if (tmp.length() == 1) {
                 md5Sb.append("0").append(tmp);
             } else {
@@ -111,6 +121,11 @@ public class QyWeixinRobotUtil {
             }
         }
         return md5Sb.toString();
+    }
+
+    private static boolean isAllowImg(String path) {
+        return path.toLowerCase(Locale.ROOT).endsWith(".png")
+                || path.toLowerCase(Locale.ROOT).endsWith(".jpg");
     }
 
 }

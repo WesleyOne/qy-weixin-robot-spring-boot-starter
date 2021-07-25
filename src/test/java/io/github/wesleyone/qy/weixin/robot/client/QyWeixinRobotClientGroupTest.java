@@ -4,6 +4,9 @@ import io.github.wesleyone.qy.weixin.robot.BasicMock;
 import io.github.wesleyone.qy.weixin.robot.Constant;
 import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotThreadFactoryImpl;
 import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotUtil;
+import io.github.wesleyone.qy.weixin.robot.enhance.DefaultQyWeixinQueueProcessStrategy;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinQueueProcessStrategy;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotHttpClient;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
 import io.github.wesleyone.qy.weixin.robot.entity.*;
 import org.junit.*;
@@ -32,16 +35,18 @@ public class QyWeixinRobotClientGroupTest {
         for (int i=0;i<keyArray.length;i++) {
             keyArray[i]=UUID.randomUUID().toString();
         }
-        qyWeixinRobotClient = new QyWeixinRobotClient(keyArray);
+        QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
+        QyWeixinQueueProcessStrategy strategy = new DefaultQyWeixinQueueProcessStrategy();
         QyWeixinRobotScheduledExecutorService scheduledExecutorService
-                = new QyWeixinRobotScheduledExecutorService(0,1, TimeUnit.SECONDS,true
+                = new QyWeixinRobotScheduledExecutorService(0,1,TimeUnit.SECONDS,true
                 , Executors.newSingleThreadScheduledExecutor(new QyWeixinRobotThreadFactoryImpl("qy-weixin-test-")));
-        qyWeixinRobotClient.setScheduledExecutorService(scheduledExecutorService);
+        qyWeixinRobotClient = new QyWeixinRobotClient(1024,qyWeixinRobotHttpClient,strategy,scheduledExecutorService, keyArray);
         qyWeixinRobotClient.init();
     }
 
     @After
     public void tearDown() {
+        qyWeixinRobotClient.shutdown();
     }
 
     @Test
@@ -167,11 +172,11 @@ public class QyWeixinRobotClientGroupTest {
     public void postMsgAsync_batch_test() throws InterruptedException {
 
         final Runnable textTask = () -> {
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 10; i++) {
                 final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage(i + "关注公众号【火字旁的炜】");
                 qyWeixinRobotClient.postMsgAsyncQueue(qyWeixinTextMessage);
                 try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 500));
+                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 50));
                 } catch (InterruptedException e) {
                     // ignore
                 }
@@ -179,7 +184,7 @@ public class QyWeixinRobotClientGroupTest {
         };
         final Runnable mkTask = () -> {
             // markdown
-            for (int i=0;i<100;i++) {
+            for (int i=0;i<10;i++) {
                 final QyWeixinMarkdownMessage qyWeixinMarkdownMessage = new QyWeixinMarkdownMessage(
                         "# 标题一\n " +
                                 "## 标题二\n " +
@@ -200,7 +205,7 @@ public class QyWeixinRobotClientGroupTest {
                 );
                 qyWeixinRobotClient.postMsgAsyncQueue(qyWeixinMarkdownMessage);
                 try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 500));
+                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 50));
                 } catch (InterruptedException e) {
                     // ignore
                 }
