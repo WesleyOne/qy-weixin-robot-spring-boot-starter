@@ -17,6 +17,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -39,16 +40,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class QyWeixinRobotClient {
 
     private static final Logger logger = LoggerFactory.getLogger(QyWeixinRobotClient.class.getName());
-    /**
-     * KEY值分隔符
-     * <p>v1.2</p>
-     */
-    private static final String KEY_SEPARATOR = ";";
-    /**
-     * webhook地址的KEY参数
-     * <p>v1.2 升级为多个KEY组合,分隔符号见{@link QyWeixinRobotClient#KEY_SEPARATOR}</p>
-     */
-    private final String key;
     /**
      * 启动状态
      */
@@ -78,17 +69,12 @@ public class QyWeixinRobotClient {
      */
     private final AtomicLong useKeyCount = new AtomicLong(0);
 
-
-    public QyWeixinRobotClient(String key) {
+    public QyWeixinRobotClient(String... key) {
         if (key == null) {
             throw new IllegalArgumentException("key is null");
         }
-        this.key = key;
-        List<String> splitKeys = QyWeixinRobotUtil.split(key, KEY_SEPARATOR);
-        if (QyWeixinRobotUtil.isEmpty(splitKeys)) {
-            throw new IllegalArgumentException("keys is null");
-        }
-        this.keys = Collections.unmodifiableList(splitKeys);
+        List<String> keyList = Arrays.asList(key);
+        this.keys = Collections.unmodifiableList(keyList);
     }
 
     /**
@@ -98,32 +84,27 @@ public class QyWeixinRobotClient {
         if (status) {
             return;
         }
-        synchronized(this) {
-            if (status) {
-                return;
-            }
-            if (msgQueue == null) {
-                this.msgQueue = new LinkedBlockingQueue<>(1024);
-            }
-            if (qyWeixinRobotHttpClient == null) {
-                this.qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
-            }
-            if (strategy == null) {
-                this.strategy = new DefaultQyWeixinQueueProcessStrategy();
-            }
-            if (scheduledExecutorService == null) {
-                ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
-                        new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
-                this.scheduledExecutorService = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
-            }
-            this.qyWeixinRobotHttpClient.init();
-            this.strategy.init();
-            this.scheduledExecutorService.init();
-            // 提交任务
-            Runnable consumeQueueRunnable = new ConsumeQueueRunnable(this);
-            this.scheduledExecutorService.scheduled(consumeQueueRunnable);
-            status = true;
+        if (msgQueue == null) {
+            this.msgQueue = new LinkedBlockingQueue<>(1024);
         }
+        if (qyWeixinRobotHttpClient == null) {
+            this.qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
+        }
+        if (strategy == null) {
+            this.strategy = new DefaultQyWeixinQueueProcessStrategy();
+        }
+        if (scheduledExecutorService == null) {
+            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
+                    new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
+            this.scheduledExecutorService = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
+        }
+        this.qyWeixinRobotHttpClient.init();
+        this.strategy.init();
+        this.scheduledExecutorService.init();
+        // 提交任务
+        Runnable consumeQueueRunnable = new ConsumeQueueRunnable(this);
+        this.scheduledExecutorService.scheduled(consumeQueueRunnable);
+        status = true;
     }
 
     private static class ConsumeQueueRunnable implements Runnable {

@@ -48,22 +48,6 @@ public class QyWeixinRobotUtilTest {
     }
 
     @Test
-    public void split() {
-        List<String> keyList = new ArrayList<>();
-        int size = 10;
-        for (int i=0;i<size;i++) {
-            keyList.add(UUID.randomUUID().toString());
-        }
-        String separator = ";";
-        String keys = String.join(separator, keyList);
-        List<String> splitList = QyWeixinRobotUtil.split(keys, separator);
-        Assert.assertEquals(size,splitList.size());
-        for (String expect : keyList) {
-            Assert.assertTrue(splitList.contains(expect));
-        }
-    }
-
-    @Test
     public void isBlank() {
         Assert.assertTrue(QyWeixinRobotUtil.isBlank(null));
         Assert.assertTrue(QyWeixinRobotUtil.isBlank(""));

@@ -23,8 +23,8 @@ public class QyWeixinRobotBean extends QyWeixinRobotClient implements Applicatio
 
     private String beanName;
 
-    public QyWeixinRobotBean(@NonNull String webhookUrl) {
-        super(webhookUrl);
+    public QyWeixinRobotBean(@NonNull String... key) {
+        super(key);
     }
 
     @Override

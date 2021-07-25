@@ -36,27 +36,6 @@ public class QyWeixinRobotUtil {
     }
 
     /**
-     * 分割字符串,去除空字符串
-     * @param source    原始字符
-     * @param separator 分隔符
-     * @return  结果集合
-     */
-    public static List<String> split(String source, String separator) {
-        List<String> list = new ArrayList<>();
-        if (isBlank(source)) {
-            return list;
-        }
-        String[] arr = source.trim().split(separator);
-        for (String item : arr) {
-            if (isBlank(item)) {
-                continue;
-            }
-            list.add(item.trim());
-        }
-        return list;
-    }
-
-    /**
      * 判断是否全部是空字符串
      * @param source    字符串
      * @return  true全空
