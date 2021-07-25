@@ -291,18 +291,12 @@ public class QyWeixinRobotClient {
         if (msgQueue == null) {
             throw new IllegalArgumentException("msgQueue is null");
         }
-        if (status) {
-            throw new IllegalStateException("client is running");
-        }
         this.msgQueue = msgQueue;
     }
 
     public synchronized void setScheduledExecutorService(QyWeixinRobotScheduledExecutorService scheduledExecutorService) {
         if (scheduledExecutorService == null) {
             throw new IllegalArgumentException("scheduledExecutorService is null");
-        }
-        if (status) {
-            throw new IllegalStateException("client is running");
         }
         this.scheduledExecutorService = scheduledExecutorService;
     }
@@ -315,9 +309,6 @@ public class QyWeixinRobotClient {
         if (strategy == null) {
             throw new IllegalArgumentException("strategy is null");
         }
-        if (status) {
-            throw new IllegalStateException("client is running");
-        }
         this.strategy = strategy;
     }
 
@@ -328,9 +319,6 @@ public class QyWeixinRobotClient {
     public synchronized void setQyWeixinRobotHttpClient(QyWeixinRobotHttpClient qyWeixinRobotHttpClient) {
         if (qyWeixinRobotHttpClient == null) {
             throw new IllegalArgumentException("qyWeixinRobotHttpClient is null");
-        }
-        if (status) {
-            throw new IllegalStateException("client is running");
         }
         this.qyWeixinRobotHttpClient = qyWeixinRobotHttpClient;
     }
