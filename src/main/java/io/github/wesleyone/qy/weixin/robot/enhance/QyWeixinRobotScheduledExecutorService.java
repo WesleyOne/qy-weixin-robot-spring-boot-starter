@@ -15,91 +15,55 @@ public class QyWeixinRobotScheduledExecutorService implements EnhanceInterface {
      * 调度配置-首次运行延迟时长
      * <p>仅初始化时可设置
      */
-    private long initialDelay = 5;
+    private final long initialDelay;
     /**
      * 调度配置-运行间隔延迟时长
      * <p>仅初始化时可设置
      */
-    private long delay = 5;
+    private final long delay;
     /**
      * 调度配置-时长单位
      * <p>仅初始化时可设置
      */
-    private TimeUnit unit = TimeUnit.SECONDS;
+    private final TimeUnit unit;
     /**
      * 任务间隔执行方式
      * <p>true: scheduleAtFixedRate按照上次执行开始时间加上延迟时间。（推荐，减少延迟）
      * <p>false: scheduleWithFixedDelay按照本次执行结束时间加上延迟时间。
      */
-    private boolean isAtFixedRate = true;
+    private final boolean isAtFixedRate;
 
     private final ScheduledExecutorService scheduledExecutorService;
 
     public QyWeixinRobotScheduledExecutorService(ScheduledExecutorService scheduledExecutorService) {
+        this.initialDelay = 5;
+        this.delay = 5;
+        this.unit = TimeUnit.SECONDS;
+        this.isAtFixedRate = true;
         this.scheduledExecutorService = scheduledExecutorService;
     }
 
     public QyWeixinRobotScheduledExecutorService(long initialDelay, long delay, TimeUnit unit, boolean isAtFixedRate, ScheduledExecutorService scheduledExecutorService) {
-        setInitialDelay(initialDelay);
-        setDelay(delay);
-        setUnit(unit);
-        setAtFixedRate(isAtFixedRate);
+        this.initialDelay = initialDelay;
+        this.delay = delay;
+        this.unit = unit;
+        this.isAtFixedRate = isAtFixedRate;
         this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @Override
     public void shutdown() {
-        getScheduledExecutorService().shutdown();
+        scheduledExecutorService.shutdown();
     }
 
     public void scheduled(Runnable command) {
-        if (isAtFixedRate()) {
-            this.scheduledExecutorService.scheduleAtFixedRate(command,getInitialDelay(),getDelay(),getUnit());
+        ScheduledFuture<?> scheduledFuture;
+        if (isAtFixedRate) {
+            scheduledFuture = this.scheduledExecutorService.scheduleAtFixedRate(command, initialDelay, delay, unit);
         } else {
-            this.scheduledExecutorService.scheduleWithFixedDelay(command,getInitialDelay(),getDelay(),getUnit());
+            scheduledFuture = this.scheduledExecutorService.scheduleWithFixedDelay(command, initialDelay, delay, unit);
         }
-    }
-
-    public ScheduledExecutorService getScheduledExecutorService() {
-        return scheduledExecutorService;
-    }
-
-    public long getInitialDelay() {
-        return initialDelay;
-    }
-
-    public void setInitialDelay(long initialDelay) {
-        if (initialDelay < 0) {
-            throw new IllegalArgumentException("initialDelay < 0");
-        }
-        this.initialDelay = initialDelay;
-    }
-
-    public long getDelay() {
-        return delay;
-    }
-
-    public void setDelay(long delay) {
-        if (delay < 0) {
-            throw new IllegalArgumentException("delay < 0");
-        }
-        this.delay = delay;
-    }
-
-    public TimeUnit getUnit() {
-        return unit;
-    }
-
-    public void setUnit(TimeUnit unit) {
-        this.unit = unit;
-    }
-
-    public boolean isAtFixedRate() {
-        return isAtFixedRate;
-    }
-
-    public void setAtFixedRate(boolean atFixedRate) {
-        isAtFixedRate = atFixedRate;
+        scheduledFuture.isDone();
     }
 
 }
