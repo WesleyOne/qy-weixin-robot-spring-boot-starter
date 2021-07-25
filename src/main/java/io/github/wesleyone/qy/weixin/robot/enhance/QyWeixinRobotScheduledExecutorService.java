@@ -52,11 +52,11 @@ public class QyWeixinRobotScheduledExecutorService implements EnhanceInterface {
         getScheduledExecutorService().shutdown();
     }
 
-    public ScheduledFuture<?> scheduled(Runnable command) {
+    public void scheduled(Runnable command) {
         if (isAtFixedRate()) {
-            return this.scheduledExecutorService.scheduleAtFixedRate(command,getInitialDelay(),getDelay(),getUnit());
+            this.scheduledExecutorService.scheduleAtFixedRate(command,getInitialDelay(),getDelay(),getUnit());
         } else {
-            return this.scheduledExecutorService.scheduleWithFixedDelay(command,getInitialDelay(),getDelay(),getUnit());
+            this.scheduledExecutorService.scheduleWithFixedDelay(command,getInitialDelay(),getDelay(),getUnit());
         }
     }
 
