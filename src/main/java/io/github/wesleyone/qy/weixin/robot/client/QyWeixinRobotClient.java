@@ -2,7 +2,11 @@ package io.github.wesleyone.qy.weixin.robot.client;
 
 
 import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotThreadFactoryImpl;
-import io.github.wesleyone.qy.weixin.robot.enhance.*;
+import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotUtil;
+import io.github.wesleyone.qy.weixin.robot.enhance.DefaultQyWeixinQueueProcessStrategy;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinQueueProcessStrategy;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotHttpClient;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
 import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinBaseAsyncMessage;
 import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinBaseMessage;
 import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinFileMessage;
@@ -13,10 +17,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 企业微信机器人客户端
@@ -33,7 +40,13 @@ public class QyWeixinRobotClient {
 
     private static final Logger logger = LoggerFactory.getLogger(QyWeixinRobotClient.class.getName());
     /**
-     * 完整webhook地址
+     * KEY值分隔符
+     * <p>v1.2</p>
+     */
+    private static final String KEY_SEPARATOR = ";";
+    /**
+     * webhook地址的KEY参数
+     * <p>v1.2 升级为多个KEY组合,分隔符号见{@link QyWeixinRobotClient#KEY_SEPARATOR}</p>
      */
     private final String key;
     /**
@@ -56,63 +69,88 @@ public class QyWeixinRobotClient {
      * 调度线程池执行器
      */
     private QyWeixinRobotScheduledExecutorService scheduledExecutorService;
+    /**
+     * 解析后的KEY列表
+     */
+    private final List<String> keys;
+    /**
+     * 使用KEY次数
+     */
+    private final AtomicLong useKeyCount = new AtomicLong(0);
 
 
     public QyWeixinRobotClient(String key) {
+        if (key == null) {
+            throw new IllegalArgumentException("key is null");
+        }
         this.key = key;
+        List<String> splitKeys = QyWeixinRobotUtil.split(key, KEY_SEPARATOR);
+        if (QyWeixinRobotUtil.isEmpty(splitKeys)) {
+            throw new IllegalArgumentException("keys is null");
+        }
+        this.keys = Collections.unmodifiableList(splitKeys);
     }
 
     /**
      * 初始化
      */
-    public synchronized void init() {
+    public void init() {
         if (status) {
             return;
         }
-        if (key == null) {
-            throw new IllegalArgumentException("key is null");
+        synchronized(this) {
+            if (status) {
+                return;
+            }
+            if (msgQueue == null) {
+                this.msgQueue = new LinkedBlockingQueue<>(1024);
+            }
+            if (qyWeixinRobotHttpClient == null) {
+                this.qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
+            }
+            if (strategy == null) {
+                this.strategy = new DefaultQyWeixinQueueProcessStrategy();
+            }
+            if (scheduledExecutorService == null) {
+                ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
+                        new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
+                this.scheduledExecutorService = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
+            }
+            this.qyWeixinRobotHttpClient.init();
+            this.strategy.init();
+            this.scheduledExecutorService.init();
+            // 提交任务
+            Runnable consumeQueueRunnable = new ConsumeQueueRunnable(this);
+            this.scheduledExecutorService.scheduled(consumeQueueRunnable);
+            status = true;
         }
-        if (msgQueue == null) {
-            this.msgQueue = new LinkedBlockingQueue<>(1024);
-        }
-        if (qyWeixinRobotHttpClient == null) {
-            this.qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
-        }
-        if (strategy == null) {
-            this.strategy = new DefaultQyWeixinQueueProcessStrategy();
-        }
-        if (scheduledExecutorService == null) {
-            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
-                    new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
-            this.scheduledExecutorService = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
-        }
-        this.qyWeixinRobotHttpClient.init();
-        this.strategy.init();
-        this.scheduledExecutorService.init();
-        // 提交任务
-        this.scheduledExecutorService.scheduled(consumeQueueRunnable());
-        status = true;
     }
 
-    private Runnable consumeQueueRunnable() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (!status) {
-                    return;
-                }
-                // 异步处理消息
-                final QyWeixinBaseAsyncMessage message = strategy.consumeProcess(msgQueue);
-                if (message == null) {
-                    return;
-                }
-                if (!status) {
-                    return;
-                }
-                // 发送异步消息
-                postMsgAsyncDirect(message);
+    private static class ConsumeQueueRunnable implements Runnable {
+
+        private final QyWeixinRobotClient client;
+
+        public ConsumeQueueRunnable(QyWeixinRobotClient client) {
+            this.client = client;
+        }
+
+        @Override
+        public void run() {
+            if (!client.status) {
+                return;
             }
-        };
+            // 异步处理消息
+            final QyWeixinBaseAsyncMessage message
+                    = client.getStrategy().consumeProcess(client.msgQueue);
+            if (message == null) {
+                return;
+            }
+            if (!client.status) {
+                return;
+            }
+            // 发送异步消息
+            client.postMsgAsyncDirect(message);
+        }
     }
 
     /**
@@ -135,7 +173,11 @@ public class QyWeixinRobotClient {
         if (!status) {
             return false;
         }
-        QyWeixinResponse response = qyWeixinRobotHttpClient.sendSync(key, message.toMap());
+        String loadBalanceKey = getLoadBalanceKey();
+        if (QyWeixinRobotUtil.isBlank(loadBalanceKey)) {
+            return false;
+        }
+        QyWeixinResponse response = qyWeixinRobotHttpClient.sendSync(loadBalanceKey, message.toMap());
         if (response == null) {
             return false;
         }
@@ -152,8 +194,12 @@ public class QyWeixinRobotClient {
         if (!status) {
             return;
         }
+        String loadBalanceKey = getLoadBalanceKey();
+        if (QyWeixinRobotUtil.isBlank(loadBalanceKey)) {
+            return;
+        }
         // 发送异步消息
-        qyWeixinRobotHttpClient.sendAsync(key, message.toMap(), new Callback<QyWeixinResponse>() {
+        qyWeixinRobotHttpClient.sendAsync(loadBalanceKey, message.toMap(), new Callback<QyWeixinResponse>() {
             @Override
             public void onResponse(Call<QyWeixinResponse> call, Response<QyWeixinResponse> response) {
                 if (response.isSuccessful()) {
@@ -194,7 +240,14 @@ public class QyWeixinRobotClient {
      * @param path  文件路径
      */
     public void uploadMedia(String path) {
-        qyWeixinRobotHttpClient.uploadMedia(key, path, new Callback<QyWeixinResponse>() {
+        if (!status) {
+            return;
+        }
+        String loadBalanceKey = getLoadBalanceKey();
+        if (QyWeixinRobotUtil.isBlank(loadBalanceKey)) {
+            return;
+        }
+        qyWeixinRobotHttpClient.uploadMedia(loadBalanceKey, path, new Callback<QyWeixinResponse>() {
             @Override
             public void onResponse(Call<QyWeixinResponse> call, Response<QyWeixinResponse> response) {
                 if (!response.isSuccessful()) {
@@ -223,9 +276,26 @@ public class QyWeixinRobotClient {
         });
     }
 
+    /**
+     * 简单实现均衡返回KEY
+     * @return KEY
+     */
+    private String getLoadBalanceKey(){
+        if (getKeys().size() == 0) {
+            return null;
+        }
+        long count = useKeyCount.incrementAndGet();
+        int index = (int) (count % getKeys().size());
+        return getKeys().get(index);
+    }
+
     /* getter and setter */
 
-    public void setMsgQueue(BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue) {
+    public List<String> getKeys() {
+        return keys;
+    }
+
+    public synchronized void setMsgQueue(BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue) {
         if (msgQueue == null) {
             throw new IllegalArgumentException("msgQueue is null");
         }
@@ -235,7 +305,7 @@ public class QyWeixinRobotClient {
         this.msgQueue = msgQueue;
     }
 
-    public void setScheduledExecutorService(QyWeixinRobotScheduledExecutorService scheduledExecutorService) {
+    public synchronized void setScheduledExecutorService(QyWeixinRobotScheduledExecutorService scheduledExecutorService) {
         if (scheduledExecutorService == null) {
             throw new IllegalArgumentException("scheduledExecutorService is null");
         }
@@ -249,7 +319,7 @@ public class QyWeixinRobotClient {
         return scheduledExecutorService;
     }
 
-    public void setStrategy(QyWeixinQueueProcessStrategy strategy) {
+    public synchronized void setStrategy(QyWeixinQueueProcessStrategy strategy) {
         if (strategy == null) {
             throw new IllegalArgumentException("strategy is null");
         }
@@ -263,7 +333,7 @@ public class QyWeixinRobotClient {
         return strategy;
     }
 
-    public void setQyWeixinRobotHttpClient(QyWeixinRobotHttpClient qyWeixinRobotHttpClient) {
+    public synchronized void setQyWeixinRobotHttpClient(QyWeixinRobotHttpClient qyWeixinRobotHttpClient) {
         if (qyWeixinRobotHttpClient == null) {
             throw new IllegalArgumentException("qyWeixinRobotHttpClient is null");
         }

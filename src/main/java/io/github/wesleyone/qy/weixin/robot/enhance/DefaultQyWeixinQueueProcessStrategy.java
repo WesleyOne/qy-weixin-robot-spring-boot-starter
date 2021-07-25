@@ -42,7 +42,7 @@ public class DefaultQyWeixinQueueProcessStrategy implements QyWeixinQueueProcess
         try {
             // 批次取出消息，提高性能
             List<QyWeixinBaseAsyncMessage> msgList = new ArrayList<>();
-            msgQueue.drainTo(msgList, maxBatchMsgCounts);
+            msgQueue.drainTo(msgList, getMaxBatchMsgCounts());
             if (msgList.size() == 0) {
                 return null;
             }

@@ -5,6 +5,7 @@ import io.github.wesleyone.qy.weixin.robot.enhance.DefaultQyWeixinQueueProcessSt
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinQueueProcessStrategy;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotHttpClient;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
+import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,7 @@ public class QyWeixinRobotAutoConfiguration {
                 .readTimeout(5, TimeUnit.SECONDS)
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS)
+                .connectionPool(new ConnectionPool(5,5L,TimeUnit.MINUTES))
                 .build();
         QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
         qyWeixinRobotHttpClient.setClient(client);
