@@ -46,7 +46,7 @@ public class QyWeixinRobotClientGroupTest {
 
     @After
     public void tearDown() {
-        qyWeixinRobotClient.destroy();
+        qyWeixinRobotClient.shutdown();
     }
 
     @Test

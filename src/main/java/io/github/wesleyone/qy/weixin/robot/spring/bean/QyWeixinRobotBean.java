@@ -87,6 +87,6 @@ public class QyWeixinRobotBean implements ApplicationContextAware, BeanNameAware
 
     @Override
     public void destroy() {
-        qyWeixinRobotClient.destroy();
+        qyWeixinRobotClient.shutdown();
     }
 }

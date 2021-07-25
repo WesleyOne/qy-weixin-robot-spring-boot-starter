@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * </ul>
  * @author http://wesleyone.github.io/
  */
-public class QyWeixinRobotClient {
+public class QyWeixinRobotClient implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(QyWeixinRobotClient.class.getName());
     /**
@@ -66,8 +66,6 @@ public class QyWeixinRobotClient {
      * 使用KEY次数
      */
     private final AtomicLong useKeyCount = new AtomicLong(0);
-
-    private ScheduledFuture<?> scheduledFuture;
 
     public QyWeixinRobotClient(String[] keyArray) {
         BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue = new LinkedBlockingQueue<>(1024);
@@ -106,52 +104,42 @@ public class QyWeixinRobotClient {
             if (status) {
                 return;
             }
-            getQyWeixinRobotHttpClient().init();
-            getStrategy().init();
-            getScheduledExecutorService().init();
+            qyWeixinRobotHttpClient.init();
+            strategy.init();
+            scheduledExecutorService.init();
             // 提交任务
-            Runnable consumeQueueRunnable = new ConsumeQueueRunnable(this);
-            scheduledFuture = this.scheduledExecutorService.scheduled(consumeQueueRunnable);
+            ScheduledFuture<?> scheduledFuture = scheduledExecutorService.scheduled(this);
+            scheduledFuture.isDone();
             status = true;
         }
     }
 
-    private static class ConsumeQueueRunnable implements Runnable {
-
-        private final QyWeixinRobotClient client;
-
-        public ConsumeQueueRunnable(QyWeixinRobotClient client) {
-            this.client = client;
+    @Override
+    public void run() {
+        if (!this.status) {
+            return;
         }
-
-        @Override
-        public void run() {
-            if (!client.status) {
-                return;
-            }
-            // 异步处理消息
-            final QyWeixinBaseAsyncMessage message
-                    = client.getStrategy().consumeProcess(client.getMsgQueue());
-            if (message == null) {
-                return;
-            }
-            if (!client.status) {
-                return;
-            }
-            // 发送异步消息
-            client.postMsgAsyncDirect(message);
+        // 异步处理消息
+        final QyWeixinBaseAsyncMessage message
+                = this.strategy.consumeProcess(this.msgQueue);
+        if (message == null) {
+            return;
         }
+        if (!this.status) {
+            return;
+        }
+        // 发送异步消息
+        this.postMsgAsyncDirect(message);
     }
 
     /**
      * 销毁
      */
-    public void destroy() {
+    public void shutdown() {
         if (!status) {
             return;
         }
         status = false;
-        scheduledFuture.cancel(true);
         scheduledExecutorService.shutdown();
     }
 
@@ -171,7 +159,7 @@ public class QyWeixinRobotClient {
         if (QyWeixinRobotUtil.isBlank(loadBalanceKey)) {
             return false;
         }
-        QyWeixinResponse response = getQyWeixinRobotHttpClient().sendSync(loadBalanceKey, message.toMap());
+        QyWeixinResponse response = qyWeixinRobotHttpClient.sendSync(loadBalanceKey, message.toMap());
         if (response == null) {
             return false;
         }
@@ -193,7 +181,7 @@ public class QyWeixinRobotClient {
             return;
         }
         // 发送异步消息
-        getQyWeixinRobotHttpClient().sendAsync(loadBalanceKey, message.toMap(), new Callback<QyWeixinResponse>() {
+        qyWeixinRobotHttpClient.sendAsync(loadBalanceKey, message.toMap(), new Callback<QyWeixinResponse>() {
             @Override
             public void onResponse(Call<QyWeixinResponse> call, Response<QyWeixinResponse> response) {
                 if (response.isSuccessful()) {
@@ -241,7 +229,7 @@ public class QyWeixinRobotClient {
         if (QyWeixinRobotUtil.isBlank(loadBalanceKey)) {
             return;
         }
-        getQyWeixinRobotHttpClient().uploadMedia(loadBalanceKey, path, new Callback<QyWeixinResponse>() {
+        qyWeixinRobotHttpClient.uploadMedia(loadBalanceKey, path, new Callback<QyWeixinResponse>() {
             @Override
             public void onResponse(Call<QyWeixinResponse> call, Response<QyWeixinResponse> response) {
                 if (!response.isSuccessful()) {
@@ -275,34 +263,12 @@ public class QyWeixinRobotClient {
      * @return KEY
      */
     private String getLoadBalanceKey(){
-        if (getKeys().size() == 0) {
+        if (keys.size() == 0) {
             return null;
         }
         long count = useKeyCount.incrementAndGet();
-        int index = (int) (count % getKeys().size());
-        return getKeys().get(index);
-    }
-
-    /* getter and setter */
-
-    public List<String> getKeys() {
-        return keys;
-    }
-
-    public BlockingQueue<QyWeixinBaseAsyncMessage> getMsgQueue() {
-        return msgQueue;
-    }
-
-    public QyWeixinRobotScheduledExecutorService getScheduledExecutorService() {
-        return scheduledExecutorService;
-    }
-
-    public QyWeixinQueueProcessStrategy getStrategy() {
-        return strategy;
-    }
-
-    public QyWeixinRobotHttpClient getQyWeixinRobotHttpClient() {
-        return qyWeixinRobotHttpClient;
+        int index = (int) (count % keys.size());
+        return keys.get(index);
     }
 
 }
