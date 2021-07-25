@@ -4,6 +4,8 @@ import io.github.wesleyone.qy.weixin.robot.client.QyWeixinRobotClient;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinQueueProcessStrategy;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotHttpClient;
+import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinBaseAsyncMessage;
+import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinBaseMessage;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -17,14 +19,26 @@ import org.springframework.lang.NonNull;
  * <p>详情见{@link QyWeixinRobotClient}
  * @author http://wesleyone.github.io/
  */
-public class QyWeixinRobotBean extends QyWeixinRobotClient implements ApplicationContextAware, BeanNameAware, InitializingBean, DisposableBean {
+public class QyWeixinRobotBean implements ApplicationContextAware, BeanNameAware, InitializingBean, DisposableBean {
 
     private ApplicationContext applicationContext;
 
     private String beanName;
 
-    public QyWeixinRobotBean(@NonNull String... key) {
-        super(key);
+    private QyWeixinRobotClient qyWeixinRobotClient;
+
+    private final String[] keyArray;
+
+    private final int capacity;
+
+    public QyWeixinRobotBean(@NonNull String[] keyArray) {
+        this.capacity = 1024;
+        this.keyArray = keyArray;
+    }
+
+    public QyWeixinRobotBean(@NonNull int capacity,@NonNull String[] keyArray) {
+        this.capacity = capacity;
+        this.keyArray = keyArray;
     }
 
     @Override
@@ -39,28 +53,40 @@ public class QyWeixinRobotBean extends QyWeixinRobotClient implements Applicatio
 
     @Override
     public void afterPropertiesSet() {
-        // Http请求客户端，未手动setter时，自动从容器中获取
-        if (getQyWeixinRobotHttpClient() == null) {
-            QyWeixinRobotHttpClient qyWeixinRobotHttpClient
-                    = applicationContext.getBean(QyWeixinRobotHttpClient.class);
-            setQyWeixinRobotHttpClient(qyWeixinRobotHttpClient);
-        }
-        // 消息队列处理策略，未手动setter时，自动从容器中获取
-        if (getStrategy() == null) {
-            QyWeixinQueueProcessStrategy qyWeixinQueueProcessStrategy
-                    = applicationContext.getBean(QyWeixinQueueProcessStrategy.class);
-            setStrategy(qyWeixinQueueProcessStrategy);
-        }
-        // 调度执行器，未手动setter时，自动从容器中获取
-        if (getScheduledExecutorService() == null) {
-            QyWeixinRobotScheduledExecutorService qyWeixinRobotScheduledExecutorService
-                    = applicationContext.getBean(QyWeixinRobotScheduledExecutorService.class);
-            setScheduledExecutorService(qyWeixinRobotScheduledExecutorService);
-        }
-        super.init();
+        // Http请求客户端，自动从容器中获取
+        QyWeixinRobotHttpClient qyWeixinRobotHttpClient
+                = applicationContext.getBean(QyWeixinRobotHttpClient.class);
+        // 消息队列处理策略，自动从容器中获取
+        QyWeixinQueueProcessStrategy qyWeixinQueueProcessStrategy
+                = applicationContext.getBean(QyWeixinQueueProcessStrategy.class);
+        // 调度执行器，自动从容器中获取
+        QyWeixinRobotScheduledExecutorService qyWeixinRobotScheduledExecutorService
+                = applicationContext.getBean(QyWeixinRobotScheduledExecutorService.class);
+
+        QyWeixinRobotClient qyWeixinRobotClient
+                = new QyWeixinRobotClient(capacity, qyWeixinRobotHttpClient, qyWeixinQueueProcessStrategy, qyWeixinRobotScheduledExecutorService, keyArray);
+        qyWeixinRobotClient.init();
+        this.qyWeixinRobotClient = qyWeixinRobotClient;
     }
 
     public String getBeanName() {
         return beanName;
+    }
+
+    public boolean postMsgSync(QyWeixinBaseMessage message) {
+        return qyWeixinRobotClient.postMsgSync(message);
+    }
+
+    public void postMsgAsyncDirect(QyWeixinBaseMessage message) {
+        qyWeixinRobotClient.postMsgAsyncDirect(message);
+    }
+
+    public boolean postMsgAsyncQueue(QyWeixinBaseAsyncMessage message) {
+        return qyWeixinRobotClient.postMsgAsyncQueue(message);
+    }
+
+    @Override
+    public void destroy() {
+        qyWeixinRobotClient.destroy();
     }
 }

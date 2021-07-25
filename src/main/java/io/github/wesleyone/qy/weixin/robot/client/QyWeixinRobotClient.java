@@ -48,19 +48,19 @@ public class QyWeixinRobotClient {
     /**
      * 消息队列
      */
-    private BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue;
+    private final BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue;
     /**
      * Http客户端
      */
-    private QyWeixinRobotHttpClient qyWeixinRobotHttpClient;
+    private final QyWeixinRobotHttpClient qyWeixinRobotHttpClient;
     /**
      * 异步消费策略
      */
-    private QyWeixinQueueProcessStrategy strategy;
+    private final QyWeixinQueueProcessStrategy strategy;
     /**
      * 调度线程池执行器
      */
-    private QyWeixinRobotScheduledExecutorService scheduledExecutorService;
+    private final QyWeixinRobotScheduledExecutorService scheduledExecutorService;
     /**
      * 解析后的KEY列表
      */
@@ -70,39 +70,42 @@ public class QyWeixinRobotClient {
      */
     private final AtomicLong useKeyCount = new AtomicLong(0);
 
-    public QyWeixinRobotClient(String... key) {
-        if (key == null) {
-            throw new IllegalArgumentException("key is null");
-        }
-        List<String> keyList = Arrays.asList(key);
-        this.keys = Collections.unmodifiableList(keyList);
+    public QyWeixinRobotClient(String[] keyArray) {
+        BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue = new LinkedBlockingQueue<>(1024);
+        QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
+        QyWeixinQueueProcessStrategy strategy = new DefaultQyWeixinQueueProcessStrategy();
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1,
+                new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
+        QyWeixinRobotScheduledExecutorService scheduledExecutorService
+                = new QyWeixinRobotScheduledExecutorService(executorService);
+        this.msgQueue = msgQueue;
+        this.qyWeixinRobotHttpClient = qyWeixinRobotHttpClient;
+        this.strategy = strategy;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.keys = Collections.unmodifiableList(Arrays.asList(keyArray));
+    }
+
+    public QyWeixinRobotClient(int capacity, QyWeixinRobotHttpClient qyWeixinRobotHttpClient, QyWeixinQueueProcessStrategy strategy, QyWeixinRobotScheduledExecutorService scheduledExecutorService, String[] keyArray) {
+        this.msgQueue = new LinkedBlockingQueue<>(capacity);
+        this.qyWeixinRobotHttpClient = qyWeixinRobotHttpClient;
+        this.strategy = strategy;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.keys = Collections.unmodifiableList(Arrays.asList(keyArray));
     }
 
     /**
      * 初始化
      */
     public synchronized void init() {
+        if (QyWeixinRobotUtil.isEmpty(keys)) {
+            throw new IllegalArgumentException("key is null");
+        }
         if (status) {
             return;
         }
         synchronized(this){
-            if (getMsgQueue() == null) {
-                setMsgQueue(new LinkedBlockingQueue<>(1024));
-            }
-            if (getQyWeixinRobotHttpClient() == null) {
-                QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
-                setQyWeixinRobotHttpClient(qyWeixinRobotHttpClient);
-            }
-            if (getStrategy() == null) {
-                DefaultQyWeixinQueueProcessStrategy strategy = new DefaultQyWeixinQueueProcessStrategy();
-                setStrategy(strategy);
-            }
-            if (getScheduledExecutorService() == null) {
-                ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
-                        new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
-                QyWeixinRobotScheduledExecutorService robotScheduledExecutorService
-                        = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
-                setScheduledExecutorService(robotScheduledExecutorService);
+            if (status) {
+                return;
             }
             getQyWeixinRobotHttpClient().init();
             getStrategy().init();
@@ -290,72 +293,12 @@ public class QyWeixinRobotClient {
         return msgQueue;
     }
 
-    public synchronized void setMsgQueue(BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue) {
-        if (msgQueue == null) {
-            throw new IllegalArgumentException("msgQueue is null");
-        }
-        if (status) {
-            return;
-        }
-        synchronized(this) {
-            if (status) {
-                return;
-            }
-            this.msgQueue = msgQueue;
-        }
-    }
-
-    public synchronized void setScheduledExecutorService(QyWeixinRobotScheduledExecutorService scheduledExecutorService) {
-        if (scheduledExecutorService == null) {
-            throw new IllegalArgumentException("scheduledExecutorService is null");
-        }
-        if (status) {
-            return;
-        }
-        synchronized(this) {
-            if (status) {
-                return;
-            }
-            this.scheduledExecutorService = scheduledExecutorService;
-        }
-    }
-
     public QyWeixinRobotScheduledExecutorService getScheduledExecutorService() {
         return scheduledExecutorService;
     }
 
-    public synchronized void setStrategy(QyWeixinQueueProcessStrategy strategy) {
-        if (strategy == null) {
-            throw new IllegalArgumentException("strategy is null");
-        }
-        if (status) {
-            return;
-        }
-        synchronized(this) {
-            if (status) {
-                return;
-            }
-            this.strategy = strategy;
-        }
-    }
-
     public QyWeixinQueueProcessStrategy getStrategy() {
         return strategy;
-    }
-
-    public synchronized void setQyWeixinRobotHttpClient(QyWeixinRobotHttpClient qyWeixinRobotHttpClient) {
-        if (qyWeixinRobotHttpClient == null) {
-            throw new IllegalArgumentException("qyWeixinRobotHttpClient is null");
-        }
-        if (status) {
-            return;
-        }
-        synchronized(this){
-            if (status) {
-                return;
-            }
-            this.qyWeixinRobotHttpClient = qyWeixinRobotHttpClient;
-        }
     }
 
     public QyWeixinRobotHttpClient getQyWeixinRobotHttpClient() {

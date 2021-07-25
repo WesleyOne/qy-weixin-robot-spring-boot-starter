@@ -4,6 +4,9 @@ import io.github.wesleyone.qy.weixin.robot.BasicMock;
 import io.github.wesleyone.qy.weixin.robot.Constant;
 import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotThreadFactoryImpl;
 import io.github.wesleyone.qy.weixin.robot.common.QyWeixinRobotUtil;
+import io.github.wesleyone.qy.weixin.robot.enhance.DefaultQyWeixinQueueProcessStrategy;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinQueueProcessStrategy;
+import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotHttpClient;
 import io.github.wesleyone.qy.weixin.robot.enhance.QyWeixinRobotScheduledExecutorService;
 import io.github.wesleyone.qy.weixin.robot.entity.*;
 import org.junit.*;
@@ -32,11 +35,12 @@ public class QyWeixinRobotClientGroupTest {
         for (int i=0;i<keyArray.length;i++) {
             keyArray[i]=UUID.randomUUID().toString();
         }
-        qyWeixinRobotClient = new QyWeixinRobotClient(keyArray);
+        QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
+        QyWeixinQueueProcessStrategy strategy = new DefaultQyWeixinQueueProcessStrategy();
         QyWeixinRobotScheduledExecutorService scheduledExecutorService
-                = new QyWeixinRobotScheduledExecutorService(0,1, TimeUnit.SECONDS,true
+                = new QyWeixinRobotScheduledExecutorService(0,1,TimeUnit.SECONDS,true
                 , Executors.newSingleThreadScheduledExecutor(new QyWeixinRobotThreadFactoryImpl("qy-weixin-test-")));
-        qyWeixinRobotClient.setScheduledExecutorService(scheduledExecutorService);
+        qyWeixinRobotClient = new QyWeixinRobotClient(1024,qyWeixinRobotHttpClient,strategy,scheduledExecutorService, keyArray);
         qyWeixinRobotClient.init();
     }
 
