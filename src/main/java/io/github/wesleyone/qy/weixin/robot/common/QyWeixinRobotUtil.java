@@ -49,7 +49,7 @@ public class QyWeixinRobotUtil {
     }
 
     public static String subStringByByteArrayLength(String source,int length) {
-        int sourceByteLen = source.toString().getBytes(StandardCharsets.UTF_8).length;
+        int sourceByteLen = source.getBytes(StandardCharsets.UTF_8).length;
         if (sourceByteLen <= length) {
             return source;
         }
@@ -78,7 +78,7 @@ public class QyWeixinRobotUtil {
 
     /**
      * 获取文件的md5值
-     * <br/>可用于图片类型消息
+     * <p>可用于图片类型消息</p>
      *
      * @param filePath  文件路径
      * @return  MD5编码

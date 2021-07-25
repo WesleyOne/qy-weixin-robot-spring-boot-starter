@@ -1,7 +1,7 @@
 
 # 企业微信机器人
 
-[![CodeQL](https://github.com/WesleyOne/qy-weixin-robot-spring-boot-starter/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/WesleyOne/qy-weixin-robot-spring-boot-starter/actions/workflows/codeql-analysis.yml) [![CircleCI](https://circleci.com/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/tree/master.svg?style=svg)](https://circleci.com/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/tree/master) [![codecov](https://codecov.io/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/branch/master/graph/badge.svg?token=C0AV7B61QJ)](https://codecov.io/gh/WesleyOne/qy-weixin-robot-spring-boot-starter)
+[![CodeQL](https://github.com/WesleyOne/qy-weixin-robot-spring-boot-starter/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/WesleyOne/qy-weixin-robot-spring-boot-starter/actions/workflows/codeql-analysis.yml) [![CircleCI](https://circleci.com/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/tree/master.svg?style=svg)](https://circleci.com/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/tree/master) [![codecov](https://codecov.io/gh/WesleyOne/qy-weixin-robot-spring-boot-starter/branch/master/graph/badge.svg?token=C0AV7B61QJ)](https://codecov.io/gh/WesleyOne/qy-weixin-robot-spring-boot-starter) ![Maven Central](https://img.shields.io/maven-central/v/io.github.wesleyone/qy-weixin-robot-spring-boot-starter)
 
 > [官方接口文档https://work.weixin.qq.com/api/doc/90000/90136/91770](https://work.weixin.qq.com/api/doc/90000/90136/91770)
 

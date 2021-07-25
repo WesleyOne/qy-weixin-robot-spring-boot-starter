@@ -60,7 +60,7 @@ public class QyWeixinMarkdownMessage extends QyWeixinBaseAsyncMessage {
     public static final int MAX_MARKDOWN_CONTENT_LEN = 4096;
     /**
      * <code>@所有人</code><br>
-     * <code>text/markdown类型消息支持在content中使用<@all>扩展语法来@群所有人</code>
+     * {@code text/markdown类型消息支持在content中使用<@all>扩展语法来@群所有人}
      */
     public static final String AT_ALL_C = "<@all>";
     /**
