@@ -1,10 +1,7 @@
 package io.github.wesleyone.qy.weixin.robot.enhance;
 
 import io.github.wesleyone.qy.weixin.robot.entity.QyWeixinResponse;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
+import okhttp3.*;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -71,12 +68,14 @@ public class QyWeixinRobotHttpClient implements EnhanceInterface {
         if (status) {
             return;
         }
-        if (client == null) {
-            client = new OkHttpClient.Builder()
+        if (getClient() == null) {
+            OkHttpClient client = new OkHttpClient.Builder()
                     .readTimeout(5, TimeUnit.SECONDS)
                     .connectTimeout(5, TimeUnit.SECONDS)
                     .writeTimeout(5, TimeUnit.SECONDS)
+                    .connectionPool(new ConnectionPool(5,5L,TimeUnit.MINUTES))
                     .build();
+            setClient(client);
         }
         Retrofit retrofit= new Retrofit.Builder()
                 .baseUrl(DEFAULT_HOST)

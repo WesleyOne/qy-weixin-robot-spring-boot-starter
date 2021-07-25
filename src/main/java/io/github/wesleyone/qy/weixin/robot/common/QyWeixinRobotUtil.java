@@ -6,8 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author http://wesleyone.github.io/
@@ -33,6 +35,38 @@ public class QyWeixinRobotUtil {
         return !isNotEmpty(collection);
     }
 
+    /**
+     * 分割字符串,去除空字符串
+     * @param source    原始字符
+     * @param separator 分隔符
+     * @return  结果集合
+     */
+    public static List<String> split(String source, String separator) {
+        List<String> list = new ArrayList<>();
+        if (isBlank(source)) {
+            return list;
+        }
+        String[] arr = source.trim().split(separator);
+        for (String item : arr) {
+            if (isBlank(item)) {
+                continue;
+            }
+            list.add(item.trim());
+        }
+        return list;
+    }
+
+    /**
+     * 判断是否全部是空字符串
+     * @param source    字符串
+     * @return  true全空
+     */
+    public static boolean isBlank(String source) {
+        if (source == null) {
+            return true;
+        }
+        return source.trim().length() == 0;
+    }
 
     /**
      * 截取byte数组
@@ -56,7 +90,7 @@ public class QyWeixinRobotUtil {
         final byte[] targetByteArray = subByteArray(
                 source.getBytes(StandardCharsets.UTF_8)
                 , 0, length);
-        return new String(targetByteArray);
+        return new String(targetByteArray,StandardCharsets.UTF_8);
     }
 
     /**
@@ -92,10 +126,11 @@ public class QyWeixinRobotUtil {
         byte[] digest = md5Algorithm.digest();
         StringBuilder md5Sb = new StringBuilder();
         for (byte b : digest) {
-            if (Integer.toHexString(0xFF & b).length() == 1) {
-                md5Sb.append("0").append(Integer.toHexString(0xFF & b));
+            String tmp = Integer.toHexString(0xFF & b);
+            if (tmp.length() == 1) {
+                md5Sb.append("0").append(tmp);
             } else {
-                md5Sb.append(Integer.toHexString(0xFF & b));
+                md5Sb.append(tmp);
             }
         }
         return md5Sb.toString();

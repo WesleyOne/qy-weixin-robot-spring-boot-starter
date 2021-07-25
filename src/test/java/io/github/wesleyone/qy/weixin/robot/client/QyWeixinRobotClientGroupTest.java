@@ -11,15 +11,15 @@ import org.junit.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
- * QyWeixinRobotClient测试用例
  * @author http://wesleyone.github.io/
  */
-public class QyWeixinRobotClientTest {
+public class QyWeixinRobotClientGroupTest {
 
     private QyWeixinRobotClient qyWeixinRobotClient;
 
@@ -28,17 +28,22 @@ public class QyWeixinRobotClientTest {
 
     @Before
     public void setUp() {
-        qyWeixinRobotClient = new QyWeixinRobotClient(Constant.WEBHOOK_URL_KEY);
+        List<String> keyList = new ArrayList<>();
+        int size = 10;
+        for (int i=0;i<size;i++) {
+            keyList.add(UUID.randomUUID().toString());
+        }
+        String keys = String.join(";", keyList);
+        qyWeixinRobotClient = new QyWeixinRobotClient(keys);
         QyWeixinRobotScheduledExecutorService scheduledExecutorService
-                = new QyWeixinRobotScheduledExecutorService(0,1,TimeUnit.SECONDS,true
+                = new QyWeixinRobotScheduledExecutorService(0,1, TimeUnit.SECONDS,true
                 , Executors.newSingleThreadScheduledExecutor(new QyWeixinRobotThreadFactoryImpl("qy-weixin-test-")));
         qyWeixinRobotClient.setScheduledExecutorService(scheduledExecutorService);
         qyWeixinRobotClient.init();
     }
 
     @After
-    public void tearDown() throws InterruptedException {
-        TimeUnit.MILLISECONDS.sleep(200);
+    public void tearDown() {
     }
 
     @Test
@@ -164,7 +169,7 @@ public class QyWeixinRobotClientTest {
     public void postMsgAsync_batch_test() throws InterruptedException {
 
         final Runnable textTask = () -> {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 100; i++) {
                 final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage(i + "关注公众号【火字旁的炜】");
                 qyWeixinRobotClient.postMsgAsyncQueue(qyWeixinTextMessage);
                 try {
@@ -176,7 +181,7 @@ public class QyWeixinRobotClientTest {
         };
         final Runnable mkTask = () -> {
             // markdown
-            for (int i=0;i<10;i++) {
+            for (int i=0;i<100;i++) {
                 final QyWeixinMarkdownMessage qyWeixinMarkdownMessage = new QyWeixinMarkdownMessage(
                         "# 标题一\n " +
                                 "## 标题二\n " +
@@ -210,7 +215,7 @@ public class QyWeixinRobotClientTest {
         mkThread.start();
 
         mkThread.join();
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(10);
     }
 
     @Test
@@ -293,5 +298,4 @@ public class QyWeixinRobotClientTest {
         qyWeixinRobotClient.uploadMedia(Constant.IMG_PATH);
         TimeUnit.SECONDS.sleep(5);
     }
-
 }
