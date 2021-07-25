@@ -103,7 +103,6 @@ public class QyWeixinRobotUtil {
         byte[] digest = md5Algorithm.digest();
         StringBuilder md5Sb = new StringBuilder();
         for (byte b : digest) {
-
             String tmp = String.format("%02x", b);
             if (tmp.length() == 1) {
                 md5Sb.append("0").append(tmp);
