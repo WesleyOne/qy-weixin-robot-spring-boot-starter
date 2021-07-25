@@ -68,7 +68,7 @@ public class QyWeixinRobotAutoConfiguration {
         final ScheduledExecutorService scheduledExecutorService =
                 Executors.newSingleThreadScheduledExecutor(
                         new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
-        return new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
+        return new QyWeixinRobotScheduledExecutorService(3,3,TimeUnit.SECONDS, true, scheduledExecutorService);
     }
 
 }

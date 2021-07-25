@@ -6,7 +6,7 @@
 
     <groupId>io.github.wesleyone</groupId>
     <artifactId>qy-weixin-robot-spring-boot-starter</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3</version>
 
     <name>qy-weixin-robot-spring-boot-starter</name>
     <description>qy weixin robot</description>

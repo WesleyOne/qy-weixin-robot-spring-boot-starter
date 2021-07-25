@@ -15,7 +15,7 @@
 <dependency>
     <groupId>io.github.wesleyone</groupId>
     <artifactId>qy-weixin-robot-spring-boot-starter</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
 </dependency>
 <!--springboot needed below-->
 <dependency>
@@ -33,7 +33,7 @@
 public class MyQyWeixinRobotConfiguration {
     @Bean
     public QyWeixinRobotBean robotA() {
-        return new QyWeixinRobotBean("替换WEBHOOK链接的参数KEY值,多个KEY值;半月角分号拼接");
+        return new QyWeixinRobotBean("KEY1","KEY2");
     }
 }
 ```
@@ -73,7 +73,7 @@ public class NoneSpringApplicationStartUp {
 
     public static void main(String[] args) {
         QyWeixinRobotClient qyWeixinRobotClient
-                = new QyWeixinRobotClient("替换WEBHOOK链接的参数KEY值,多个KEY值;半月角分号拼接");
+                = new QyWeixinRobotClient("KEY1","KEY2");
         // 初始化
         qyWeixinRobotClient.init();
 
@@ -130,7 +130,7 @@ public QyWeixinRobotHttpClient myHttpClient() {
 public QyWeixinQueueProcessStrategy myQueueProcessStrategy() {
     final DefaultQyWeixinQueueProcessStrategy strategy
         = new DefaultQyWeixinQueueProcessStrategy();
-        strategy.setMaxBatchMsgCounts(10);
+    strategy.setMaxBatchMsgCounts(10);
     return strategy;
 }
 ```
@@ -148,8 +148,8 @@ public QyWeixinQueueProcessStrategy myQueueProcessStrategy() {
 @Primary
 public QyWeixinRobotScheduledExecutorService myScheduledExecutorService() {
     final ScheduledExecutorService scheduledExecutorService =
-              Executors.newScheduledThreadPool(5,new QyWeixinRobotThreadFactoryImpl("qy-weixin-spring-"));
-    return new QyWeixinRobotScheduledExecutorService(2,3,TimeUnit.SECONDS, true, scheduledExecutorService);
+              Executors.newScheduledThreadPool(1,new QyWeixinRobotThreadFactoryImpl("QyWeixinRobot-"));
+    return new QyWeixinRobotScheduledExecutorService(3,3,TimeUnit.SECONDS, true, scheduledExecutorService);
 }
 ```
 
@@ -161,18 +161,18 @@ public QyWeixinRobotScheduledExecutorService myScheduledExecutorService() {
 - `delay` 运行间隔延迟时长，默认5。
 - `unit` 时长单位，默认秒。
 - `isAtFixedRate`
-    - `true`: 默认值。使用`scheduleAtFixedRate` 按照上次执行开始时间加上延迟时间。（推荐，减少延迟）
-    - `false`: 使用`scheduleWithFixedDelay` 按照本次执行结束时间加上延迟时间。
+    - `true`: 默认值。使用`scheduleAtFixedRate` 按照上次执行开始时间加上延迟时间，来计算下次调度开始时间。（推荐，减少延迟）
+    - `false`: 使用`scheduleWithFixedDelay` 按照本次执行结束时间加上延迟时间，来计算下次调度开始时间。
 
 > 每个机器人发送的消息不能超过20条/分钟。
 > 
 > ⚠️尤其是分布式项目下，一个机器人在多台服务器上使用，要修改`delay`间隔时间，防止被限流。
 > 
-> `v1.2`版本支持机器人对象升级为群组机器人概念，允许配置多个KEY，发送请求是根据负载均衡策略选择其中一个KEY。极大增强了抗限流能力。
+> `v1.2`版本开始，支持机器人配置多个KEY，发送请求是根据负载均衡策略选择其中一个KEY。极大增强了抗限流能力。
 > 
 > 参考计算公式:`delay=(60/20) * 分布式项目服务器数量 / KEY数量`。
 > 
-> 个人测试过单个群创建10个KEY（机器人），间隔时间1秒，没有被限流。
+> 个人测试过单个机器人配置10个KEY，间隔时间1秒，异步消息异步请求连发1000条没有被限流。
 
 
 ## 建议
