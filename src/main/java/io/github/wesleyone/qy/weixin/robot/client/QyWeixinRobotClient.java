@@ -281,15 +281,19 @@ public class QyWeixinRobotClient {
      * @return KEY
      */
     private String getLoadBalanceKey(){
-        if (keys.size() == 0) {
+        if (getKeys().size() == 0) {
             return null;
         }
         long count = useKeyCount.incrementAndGet();
-        int index = (int) (count % keys.size());
-        return keys.get(index);
+        int index = (int) (count % getKeys().size());
+        return getKeys().get(index);
     }
 
     /* getter and setter */
+
+    public List<String> getKeys() {
+        return keys;
+    }
 
     public synchronized void setMsgQueue(BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue) {
         if (msgQueue == null) {
