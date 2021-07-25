@@ -171,11 +171,11 @@ public class QyWeixinRobotClientGroupTest {
     public void postMsgAsync_batch_test() throws InterruptedException {
 
         final Runnable textTask = () -> {
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 10; i++) {
                 final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage(i + "关注公众号【火字旁的炜】");
                 qyWeixinRobotClient.postMsgAsyncQueue(qyWeixinTextMessage);
                 try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 500));
+                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 50));
                 } catch (InterruptedException e) {
                     // ignore
                 }
@@ -183,7 +183,7 @@ public class QyWeixinRobotClientGroupTest {
         };
         final Runnable mkTask = () -> {
             // markdown
-            for (int i=0;i<100;i++) {
+            for (int i=0;i<10;i++) {
                 final QyWeixinMarkdownMessage qyWeixinMarkdownMessage = new QyWeixinMarkdownMessage(
                         "# 标题一\n " +
                                 "## 标题二\n " +
@@ -204,7 +204,7 @@ public class QyWeixinRobotClientGroupTest {
                 );
                 qyWeixinRobotClient.postMsgAsyncQueue(qyWeixinMarkdownMessage);
                 try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 500));
+                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 50));
                 } catch (InterruptedException e) {
                     // ignore
                 }

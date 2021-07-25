@@ -45,14 +45,4 @@ public class DefaultQyWeixinQueueProcessStrategyTest {
         Assert.assertNotNull(qyWeixinBaseAsyncMessage);
     }
 
-    @Test
-    public void getMaxBatchMsgCounts() {
-        // ignore
-    }
-
-    @Test
-    public void setMaxBatchMsgCounts() {
-        // ignore
-    }
-
 }

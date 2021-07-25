@@ -173,7 +173,7 @@ public class QyWeixinRobotBeanTest {
                     final QyWeixinTextMessage qyWeixinTextMessage = new QyWeixinTextMessage(i + "关注公众号【火字旁的炜】");
                     robotA.postMsgAsyncQueue(qyWeixinTextMessage);
                     try {
-                        TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 500));
+                        TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 50));
                     } catch (InterruptedException e) {
                         // ignore
                     }
@@ -205,7 +205,7 @@ public class QyWeixinRobotBeanTest {
                     );
                     robotA.postMsgAsyncQueue(qyWeixinMarkdownMessage);
                     try {
-                        TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 500));
+                        TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(10, 50));
                     } catch (InterruptedException e) {
                         // ignore
                     }

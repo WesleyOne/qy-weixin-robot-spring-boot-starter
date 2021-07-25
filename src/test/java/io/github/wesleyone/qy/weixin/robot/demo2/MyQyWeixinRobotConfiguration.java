@@ -75,9 +75,7 @@ public class MyQyWeixinRobotConfiguration {
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS)
                 .build();
-        QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
-        qyWeixinRobotHttpClient.setClient(client);
-        return qyWeixinRobotHttpClient;
+        return new QyWeixinRobotHttpClient(client);
     }
 
     /**
