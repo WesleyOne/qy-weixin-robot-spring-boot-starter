@@ -19,10 +19,12 @@ public class DefaultQyWeixinQueueProcessStrategyTest {
     @Before
     public void setUp() {
         strategy = new DefaultQyWeixinQueueProcessStrategy();
+        strategy.init();
     }
 
     @After
     public void tearDown() {
+        strategy.shutdown();
     }
 
     @Test

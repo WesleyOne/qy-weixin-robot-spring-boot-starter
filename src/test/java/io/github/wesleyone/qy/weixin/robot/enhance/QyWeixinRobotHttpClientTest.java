@@ -32,8 +32,8 @@ public class QyWeixinRobotHttpClientTest {
     }
 
     @After
-    public void tearDown() throws InterruptedException {
-
+    public void tearDown() {
+        qyWeixinRobotHttpClient.shutdown();
     }
 
     @Test
@@ -67,7 +67,7 @@ public class QyWeixinRobotHttpClientTest {
     }
 
     @Test
-    public void uploadMedia() throws IOException, InterruptedException {
+    public void uploadMedia() throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         qyWeixinRobotHttpClient.uploadMedia(Constant.WEBHOOK_URL_KEY[0], Constant.IMG_PATH, new Callback<QyWeixinResponse>() {
             @Override

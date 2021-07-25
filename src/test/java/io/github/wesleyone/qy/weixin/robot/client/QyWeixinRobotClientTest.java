@@ -41,6 +41,7 @@ public class QyWeixinRobotClientTest {
     @After
     public void tearDown() throws InterruptedException {
         TimeUnit.MILLISECONDS.sleep(200);
+        qyWeixinRobotClient.destroy();
     }
 
     @Test

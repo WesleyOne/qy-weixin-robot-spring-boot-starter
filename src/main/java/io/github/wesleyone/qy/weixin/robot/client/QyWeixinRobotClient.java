@@ -20,10 +20,7 @@ import retrofit2.Response;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -70,6 +67,8 @@ public class QyWeixinRobotClient {
      */
     private final AtomicLong useKeyCount = new AtomicLong(0);
 
+    private ScheduledFuture<?> scheduledFuture;
+
     public QyWeixinRobotClient(String[] keyArray) {
         BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue = new LinkedBlockingQueue<>(1024);
         QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
@@ -112,7 +111,7 @@ public class QyWeixinRobotClient {
             getScheduledExecutorService().init();
             // 提交任务
             Runnable consumeQueueRunnable = new ConsumeQueueRunnable(this);
-            this.scheduledExecutorService.scheduled(consumeQueueRunnable);
+            scheduledFuture = this.scheduledExecutorService.scheduled(consumeQueueRunnable);
             status = true;
         }
     }
@@ -152,6 +151,7 @@ public class QyWeixinRobotClient {
             return;
         }
         status = false;
+        scheduledFuture.cancel(true);
         scheduledExecutorService.shutdown();
     }
 

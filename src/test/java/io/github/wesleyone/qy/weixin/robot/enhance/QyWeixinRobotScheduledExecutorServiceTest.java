@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,13 +16,15 @@ import java.util.concurrent.TimeUnit;
 public class QyWeixinRobotScheduledExecutorServiceTest {
     private QyWeixinRobotScheduledExecutorService qyWeixinRobotScheduledExecutorService;
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         qyWeixinRobotScheduledExecutorService = new QyWeixinRobotScheduledExecutorService(0,1,TimeUnit.SECONDS,true,executorService);
+        qyWeixinRobotScheduledExecutorService.init();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
+        qyWeixinRobotScheduledExecutorService.shutdown();
     }
 
     @Test
@@ -31,12 +34,13 @@ public class QyWeixinRobotScheduledExecutorServiceTest {
 
     @Test
     public void scheduled() {
-        qyWeixinRobotScheduledExecutorService.scheduled(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(true);
-            }
-        });
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        qyWeixinRobotScheduledExecutorService.scheduled(countDownLatch::countDown);
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail(e.getMessage());
+        }
         Assert.assertTrue(true);
     }
 }
