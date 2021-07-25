@@ -43,7 +43,7 @@ public class QyWeixinRobotClient {
     /**
      * 启动状态
      */
-    private boolean status = false;
+    private volatile boolean status = false;
     /**
      * 消息队列
      */
@@ -84,27 +84,31 @@ public class QyWeixinRobotClient {
         if (status) {
             return;
         }
-        if (msgQueue == null) {
-            this.msgQueue = new LinkedBlockingQueue<>(1024);
+        status = true;
+        if (getMsgQueue() == null) {
+            setMsgQueue(new LinkedBlockingQueue<>(1024));
         }
-        if (qyWeixinRobotHttpClient == null) {
-            this.qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
+        if (getQyWeixinRobotHttpClient() == null) {
+            QyWeixinRobotHttpClient qyWeixinRobotHttpClient = new QyWeixinRobotHttpClient();
+            setQyWeixinRobotHttpClient(qyWeixinRobotHttpClient);
         }
-        if (strategy == null) {
-            this.strategy = new DefaultQyWeixinQueueProcessStrategy();
+        if (getStrategy() == null) {
+            DefaultQyWeixinQueueProcessStrategy strategy = new DefaultQyWeixinQueueProcessStrategy();
+            setStrategy(strategy);
         }
-        if (scheduledExecutorService == null) {
+        if (getScheduledExecutorService() == null) {
             ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
                     new QyWeixinRobotThreadFactoryImpl("QyWeixinRbt-"));
-            this.scheduledExecutorService = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
+            QyWeixinRobotScheduledExecutorService robotScheduledExecutorService
+                    = new QyWeixinRobotScheduledExecutorService(scheduledExecutorService);
+            setScheduledExecutorService(robotScheduledExecutorService);
         }
-        this.qyWeixinRobotHttpClient.init();
-        this.strategy.init();
-        this.scheduledExecutorService.init();
+        getQyWeixinRobotHttpClient().init();
+        getStrategy().init();
+        getScheduledExecutorService().init();
         // 提交任务
         Runnable consumeQueueRunnable = new ConsumeQueueRunnable(this);
         this.scheduledExecutorService.scheduled(consumeQueueRunnable);
-        status = true;
     }
 
     private static class ConsumeQueueRunnable implements Runnable {
@@ -122,7 +126,7 @@ public class QyWeixinRobotClient {
             }
             // 异步处理消息
             final QyWeixinBaseAsyncMessage message
-                    = client.getStrategy().consumeProcess(client.msgQueue);
+                    = client.getStrategy().consumeProcess(client.getMsgQueue());
             if (message == null) {
                 return;
             }
@@ -138,6 +142,9 @@ public class QyWeixinRobotClient {
      * 销毁
      */
     public void destroy() {
+        if (!status) {
+            return;
+        }
         status = false;
         scheduledExecutorService.shutdown();
     }
@@ -274,6 +281,10 @@ public class QyWeixinRobotClient {
 
     public List<String> getKeys() {
         return keys;
+    }
+
+    public BlockingQueue<QyWeixinBaseAsyncMessage> getMsgQueue() {
+        return msgQueue;
     }
 
     public synchronized void setMsgQueue(BlockingQueue<QyWeixinBaseAsyncMessage> msgQueue) {
