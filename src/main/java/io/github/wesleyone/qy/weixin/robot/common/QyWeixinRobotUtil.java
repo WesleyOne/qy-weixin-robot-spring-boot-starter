@@ -6,10 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author http://wesleyone.github.io/
@@ -33,27 +31,6 @@ public class QyWeixinRobotUtil {
      */
     public static boolean isEmpty(Collection<?> collection) {
         return !isNotEmpty(collection);
-    }
-
-    /**
-     * 分割字符串,去除空字符串
-     * @param source    原始字符
-     * @param separator 分隔符
-     * @return  结果集合
-     */
-    public static List<String> split(String source, String separator) {
-        List<String> list = new ArrayList<>();
-        if (isBlank(source)) {
-            return list;
-        }
-        String[] arr = source.trim().split(separator);
-        for (String item : arr) {
-            if (isBlank(item)) {
-                continue;
-            }
-            list.add(item.trim());
-        }
-        return list;
     }
 
     /**

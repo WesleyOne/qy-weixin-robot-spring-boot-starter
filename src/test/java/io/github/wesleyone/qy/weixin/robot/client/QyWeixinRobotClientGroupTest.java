@@ -28,13 +28,11 @@ public class QyWeixinRobotClientGroupTest {
 
     @Before
     public void setUp() {
-        List<String> keyList = new ArrayList<>();
-        int size = 10;
-        for (int i=0;i<size;i++) {
-            keyList.add(UUID.randomUUID().toString());
+        String[] keyArray = new String[10];
+        for (int i=0;i<keyArray.length;i++) {
+            keyArray[i]=UUID.randomUUID().toString();
         }
-        String keys = String.join(";", keyList);
-        qyWeixinRobotClient = new QyWeixinRobotClient(keys);
+        qyWeixinRobotClient = new QyWeixinRobotClient(keyArray);
         QyWeixinRobotScheduledExecutorService scheduledExecutorService
                 = new QyWeixinRobotScheduledExecutorService(0,1, TimeUnit.SECONDS,true
                 , Executors.newSingleThreadScheduledExecutor(new QyWeixinRobotThreadFactoryImpl("qy-weixin-test-")));
