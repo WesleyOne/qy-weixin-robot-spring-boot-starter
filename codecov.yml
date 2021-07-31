@@ -1,0 +1,9 @@
+ignore:
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/common/QyWeixinRobotMessageType.java"
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/entity/QyWeixinRobotBaseMessage.java"
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/entity/QyWeixinRobotTextMessage.java"
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/entity/QyWeixinRobotMarkdownMessage.java"
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/entity/QyWeixinRobotImageMessage.java"
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/entity/QyWeixinRobotNewsMessage.java"
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/entity/QyWeixinRobotFileMessage.java"
+  - "src/main/java/io/github/wesleyone/qy/weixin/robot/entity/QyWeixinRobotResponse.java"
