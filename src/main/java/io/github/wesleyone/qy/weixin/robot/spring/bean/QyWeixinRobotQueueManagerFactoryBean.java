@@ -16,7 +16,7 @@ public class QyWeixinRobotQueueManagerFactoryBean implements FactoryBean<QyWeixi
 
     @Override
     public QyWeixinRobotQueueManagerComponent getObject() throws Exception {
-        return clazz.newInstance();
+        return clazz.getDeclaredConstructor().newInstance();
     }
 
     @Override

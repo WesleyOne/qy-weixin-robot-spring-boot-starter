@@ -17,7 +17,7 @@ public class QyWeixinRobotKeyManagerFactoryBean implements FactoryBean<QyWeixinR
 
     @Override
     public QyWeixinRobotKeyManagerComponent getObject() throws Exception {
-        return clazz.newInstance();
+        return clazz.getDeclaredConstructor().newInstance();
     }
 
     @Override

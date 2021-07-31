@@ -40,7 +40,7 @@ public class DefaultQyWeixinRobotKeyManagerComponent implements QyWeixinRobotKey
                 continue;
             }
             selectKeys.add(decrement);
-            if ((++index) >= maxCount) {
+            if (++index >= maxCount) {
                 break;
             }
         }

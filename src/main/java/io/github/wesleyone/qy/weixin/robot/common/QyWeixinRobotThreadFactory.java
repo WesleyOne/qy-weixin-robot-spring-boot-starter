@@ -18,7 +18,6 @@ public class QyWeixinRobotThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(Runnable r) {
         final Thread thread = new Thread(r, namePrefix + threadNumber.getAndIncrement());
-        thread.setPriority(Thread.NORM_PRIORITY);
         thread.setDaemon(false);
         return thread;
     }

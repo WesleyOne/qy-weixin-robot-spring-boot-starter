@@ -79,7 +79,7 @@ public class QyWeixinRobotGroupBean implements ApplicationContextAware, BeanName
     @Override
     public QyWeixinRobotResponse send(QyWeixinRobotBaseMessage message) {
         if (groupClient == null) {
-            return QyWeixinRobotResponse.err("客户端为初始化");
+            return QyWeixinRobotResponse.err("客户端未初始化:"+getBeanName());
         }
         return groupClient.send(message);
     }
@@ -87,7 +87,7 @@ public class QyWeixinRobotGroupBean implements ApplicationContextAware, BeanName
     @Override
     public QyWeixinRobotResponse sendDirect(QyWeixinRobotBaseMessage message) {
         if (groupClient == null) {
-            return QyWeixinRobotResponse.err("客户端为初始化");
+            return QyWeixinRobotResponse.err("客户端未初始化:"+getBeanName());
         }
         return groupClient.sendDirect(message);
     }
@@ -95,8 +95,12 @@ public class QyWeixinRobotGroupBean implements ApplicationContextAware, BeanName
     @Override
     public QyWeixinRobotResponse uploadMedia(String filename, byte[] content) {
         if (groupClient == null) {
-            return QyWeixinRobotResponse.err("客户端为初始化");
+            return QyWeixinRobotResponse.err("客户端未初始化:"+getBeanName());
         }
         return groupClient.uploadMedia(filename, content);
+    }
+
+    public String getBeanName() {
+        return beanName;
     }
 }

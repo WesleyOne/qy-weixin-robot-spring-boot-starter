@@ -176,12 +176,7 @@ public class QyWeixinRobotGroupBeanTest {
     public void sendImg(Function<QyWeixinRobotBaseMessage, QyWeixinRobotResponse> func) {
         // 图片
         try {
-            String path = Constant.IMG_PATH;
-            final String base64 = Constant.base64(path);
-            final String md5 = Constant.md5(path);
-            Assert.assertEquals(Constant.BASE64,base64);
-            Assert.assertEquals(Constant.MD5,md5);
-            final QyWeixinRobotImageMessage imageMessage = new QyWeixinRobotImageMessage(base64, md5);
+            final QyWeixinRobotImageMessage imageMessage = new QyWeixinRobotImageMessage(Constant.BASE64, Constant.MD5);
             QyWeixinRobotResponse send = func.apply(imageMessage);
             Assert.assertNotNull(send);
             Assert.assertTrue(send.isSuccess());
