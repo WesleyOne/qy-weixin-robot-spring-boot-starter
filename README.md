@@ -33,7 +33,15 @@
 </dependency>
 ```
 
-## SpringBoot环境
+## 认识消息类型对象
+
+- 文本：`QyWeixinRobotTextMessage`
+- Markdown：`QyWeixinRobotMarkdownMessage`
+- 图片：`QyWeixinRobotImageMessage`
+- 图文：`QyWeixinRobotNewsMessage`
+- 文件：`QyWeixinRobotFileMessage`
+
+## SpringBoot环境案例
 
 **添加机器人**
 ```java
@@ -61,7 +69,7 @@ public class SpringApplicationStartUp {
 }
 ```
 
-## 非SpringBoot环境
+## 非SpringBoot环境案例
 
 ```java
 public class NoneSpringApplicationStartUp {
@@ -83,7 +91,6 @@ public class NoneSpringApplicationStartUp {
 
 # 进阶操作
 
-## 可扩展点
 可通过自定义扩展点，覆盖默认配置。
 
 - HTTP请求客户端
